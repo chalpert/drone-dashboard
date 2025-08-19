@@ -216,7 +216,7 @@ export default function FleetPage() {
               </div>
             </CardHeader>
             <CardContent className="space-y-6">
-              {/* Overall Progress */}
+              {/* Overall Progress - Combined */}
               <div>
                 <div className="flex items-center justify-between mb-3">
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Build Progress</h3>
@@ -224,7 +224,14 @@ export default function FleetPage() {
                     {selectedDrone.overallCompletion}%
                   </span>
                 </div>
-                <Progress value={selectedDrone.overallCompletion} className="h-4" />
+                <div className="relative">
+                  <div className="w-full h-4 bg-gray-200 dark:bg-gray-700 rounded-full">
+                    <div 
+                      className="h-full bg-black rounded-full transition-all duration-300" 
+                      style={{ width: `${selectedDrone.overallCompletion}%` }}
+                    />
+                  </div>
+                </div>
               </div>
 
               {/* Category Breakdown */}
@@ -253,7 +260,7 @@ export default function FleetPage() {
                     </div>
                     {expandedCategories.includes(category.id) && (
                       <div className="px-4 pb-4 border-t border-gray-100 dark:border-gray-700">
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-3">
+                        <div className="space-y-2 pt-3">
                           {category.components.map((component) => {
                             // Calculate the weighted total for this component (category weight * component weight / 100)
                             const weightedTotal = (category.weight * component.weight / 100).toFixed(1);

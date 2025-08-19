@@ -10,13 +10,20 @@ function calculateCategoryCompletion(components: Component[]): number {
   return Math.round((completedWeight / totalWeight) * 100)
 }
 
-// Helper function to calculate overall drone completion
+// Helper function to calculate overall drone completion (only completed components)
 function calculateOverallCompletion(categories: ComponentCategory[]): number {
-  const totalWeight = categories.reduce((sum, cat) => sum + cat.weight, 0)
-  const completedWeight = categories.reduce((sum, cat) => {
-    return sum + (cat.weight * (cat.completionPercentage / 100))
-  }, 0)
-  return Math.round((completedWeight / totalWeight) * 100)
+  let totalCompleted = 0
+  
+  categories.forEach(category => {
+    category.components.forEach(component => {
+      if (component.status === 'completed') {
+        // Calculate the actual weighted total for this component
+        totalCompleted += (category.weight * component.weight / 100)
+      }
+    })
+  })
+  
+  return Math.round(totalCompleted)
 }
 
 // Helper to create components from definitions
