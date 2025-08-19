@@ -53,23 +53,34 @@ export const COMPONENT_DEFINITIONS = {
     ]
   },
   propulsion: {
-    name: 'Propulsion',
-    weight: 35, // Total for propulsion category
+    name: 'Propulsion', 
+    weight: 15,
     components: [
-      { name: 'Lifters', weight: 42.86 }, // 15% of overall (35% * 42.86%)
-      { name: 'Tractors', weight: 28.57 }, // 10% of overall
-      { name: 'Tractor Install', weight: 14.29 }, // 5% of overall
-      { name: 'ESC Install', weight: 14.29 }, // 5% of overall
+      { name: 'Lifters', weight: 100 }, // 15% of overall (15% * 100%)
+    ]
+  },
+  tractors: {
+    name: 'Tractors',
+    weight: 10,
+    components: [
+      { name: 'Tractor Install', weight: 25 }, // 2.5% of overall (10% * 25%)
+      { name: 'Tractor Assembly', weight: 50 }, // 5% of overall (10% * 50%)
+      { name: 'ESC Install', weight: 25 }, // 2.5% of overall (10% * 25%)
     ]
   },
   power: {
     name: 'Power',
-    weight: 30, // Total for power category
+    weight: 10,
     components: [
-      { name: 'Busbar', weight: 33.33 }, // 10% of overall (30% * 33.33%)
-      { name: 'Wire Harnessing', weight: 33.33 }, // 10% of overall
-      { name: 'Powertrain Harnessing', weight: 16.67 }, // 5% of overall
-      { name: 'Avionics Harnessing', weight: 16.67 }, // 5% of overall
+      { name: 'Busbar', weight: 100 }, // 10% of overall (10% * 100%)
+    ]
+  },
+  wiring: {
+    name: 'Wire Harnessing',
+    weight: 10,
+    components: [
+      { name: 'Powertrain Harnessing', weight: 50 }, // 5% of overall (10% * 50%)
+      { name: 'Avionics Harnessing', weight: 50 }, // 5% of overall (10% * 50%)
     ]
   },
   avionics: {

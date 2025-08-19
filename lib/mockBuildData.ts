@@ -39,12 +39,11 @@ const s1Components = {
     'Payload Rails': 'pending'
   }),
   propulsion: createComponents('propulsion', {
-    'Lifters': 'in-progress',
-    'Tractors': 'pending',
-    'Tractor Install': 'pending',
-    'ESC Install': 'pending'
+    'Lifters': 'in-progress'
   }),
+  tractors: createComponents('tractors'),
   power: createComponents('power'),
+  wiring: createComponents('wiring'),
   avionics: createComponents('avionics'),
   radio: createComponents('radio'),
   camera: createComponents('camera')
@@ -66,11 +65,25 @@ const s1Categories: ComponentCategory[] = [
     completionPercentage: calculateCategoryCompletion(s1Components.propulsion)
   },
   {
+    id: 'tractors',
+    name: 'Tractors',
+    weight: COMPONENT_DEFINITIONS.tractors.weight,
+    components: s1Components.tractors,
+    completionPercentage: calculateCategoryCompletion(s1Components.tractors)
+  },
+  {
     id: 'power',
     name: 'Power',
     weight: COMPONENT_DEFINITIONS.power.weight,
     components: s1Components.power,
     completionPercentage: calculateCategoryCompletion(s1Components.power)
+  },
+  {
+    id: 'wiring',
+    name: 'Wire Harnessing',
+    weight: COMPONENT_DEFINITIONS.wiring.weight,
+    components: s1Components.wiring,
+    completionPercentage: calculateCategoryCompletion(s1Components.wiring)
   },
   {
     id: 'avionics',
@@ -104,15 +117,18 @@ const s2Components = {
     'Payload Rails': 'completed'
   }),
   propulsion: createComponents('propulsion', {
-    'Lifters': 'completed',
-    'Tractors': 'completed',
+    'Lifters': 'completed'
+  }),
+  tractors: createComponents('tractors', {
     'Tractor Install': 'in-progress',
+    'Tractor Assembly': 'completed',
     'ESC Install': 'pending'
   }),
   power: createComponents('power', {
-    'Busbar': 'completed',
-    'Wire Harnessing': 'in-progress',
-    'Powertrain Harnessing': 'pending',
+    'Busbar': 'completed'
+  }),
+  wiring: createComponents('wiring', {
+    'Powertrain Harnessing': 'in-progress',
     'Avionics Harnessing': 'pending'
   }),
   avionics: createComponents('avionics'),
@@ -136,11 +152,25 @@ const s2Categories: ComponentCategory[] = [
     completionPercentage: calculateCategoryCompletion(s2Components.propulsion)
   },
   {
+    id: 'tractors',
+    name: 'Tractors',
+    weight: COMPONENT_DEFINITIONS.tractors.weight,
+    components: s2Components.tractors,
+    completionPercentage: calculateCategoryCompletion(s2Components.tractors)
+  },
+  {
     id: 'power',
     name: 'Power',
     weight: COMPONENT_DEFINITIONS.power.weight,
     components: s2Components.power,
     completionPercentage: calculateCategoryCompletion(s2Components.power)
+  },
+  {
+    id: 'wiring',
+    name: 'Wire Harnessing',
+    weight: COMPONENT_DEFINITIONS.wiring.weight,
+    components: s2Components.wiring,
+    completionPercentage: calculateCategoryCompletion(s2Components.wiring)
   },
   {
     id: 'avionics',
@@ -174,14 +204,17 @@ const s3Components = {
     'Payload Rails': 'completed'
   }),
   propulsion: createComponents('propulsion', {
-    'Lifters': 'completed',
-    'Tractors': 'completed',
+    'Lifters': 'completed'
+  }),
+  tractors: createComponents('tractors', {
     'Tractor Install': 'completed',
+    'Tractor Assembly': 'completed',
     'ESC Install': 'completed'
   }),
   power: createComponents('power', {
-    'Busbar': 'completed',
-    'Wire Harnessing': 'completed',
+    'Busbar': 'completed'
+  }),
+  wiring: createComponents('wiring', {
     'Powertrain Harnessing': 'completed',
     'Avionics Harnessing': 'completed'
   }),
@@ -221,11 +254,25 @@ const s3Categories: ComponentCategory[] = [
     completionPercentage: calculateCategoryCompletion(s3Components.propulsion)
   },
   {
+    id: 'tractors',
+    name: 'Tractors',
+    weight: COMPONENT_DEFINITIONS.tractors.weight,
+    components: s3Components.tractors,
+    completionPercentage: calculateCategoryCompletion(s3Components.tractors)
+  },
+  {
     id: 'power',
     name: 'Power',
     weight: COMPONENT_DEFINITIONS.power.weight,
     components: s3Components.power,
     completionPercentage: calculateCategoryCompletion(s3Components.power)
+  },
+  {
+    id: 'wiring',
+    name: 'Wire Harnessing',
+    weight: COMPONENT_DEFINITIONS.wiring.weight,
+    components: s3Components.wiring,
+    completionPercentage: calculateCategoryCompletion(s3Components.wiring)
   },
   {
     id: 'avionics',
@@ -297,7 +344,7 @@ export const mockBuildActivity: BuildActivity[] = [
     droneSerial: 'S2',
     timestamp: '2024-01-19 13:15:22',
     component: 'Tractor Install',
-    category: 'Propulsion',
+    category: 'Tractors',
     action: 'started',
     notes: 'Installing tractor motor assemblies'
   },
