@@ -22,7 +22,7 @@ export interface ComponentCategory {
 export interface BuildDrone {
   serial: string // S1, S2, S3, etc.
   model: 'G1-M' | 'G1-C'
-  status: 'planning' | 'in-build' | 'testing' | 'completed'
+  status: 'pending' | 'in-progress' | 'completed'
   categories: ComponentCategory[]
   overallCompletion: number // Calculated from category completions
   startDate?: string

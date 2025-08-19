@@ -255,7 +255,7 @@ export const mockBuildDrones: BuildDrone[] = [
   {
     serial: 'S1',
     model: 'G1-M',
-    status: 'in-build',
+    status: 'in-progress',
     categories: s1Categories,
     overallCompletion: calculateOverallCompletion(s1Categories),
     startDate: '2024-01-15',
@@ -264,7 +264,7 @@ export const mockBuildDrones: BuildDrone[] = [
   {
     serial: 'S2',
     model: 'G1-C',
-    status: 'in-build',
+    status: 'in-progress',
     categories: s2Categories,
     overallCompletion: calculateOverallCompletion(s2Categories),
     startDate: '2024-01-20',
@@ -273,7 +273,7 @@ export const mockBuildDrones: BuildDrone[] = [
   {
     serial: 'S3',
     model: 'G1-M',
-    status: 'testing',
+    status: 'in-progress',
     categories: s3Categories,
     overallCompletion: calculateOverallCompletion(s3Categories),
     startDate: '2024-01-10',
