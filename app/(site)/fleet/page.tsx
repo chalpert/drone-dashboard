@@ -240,16 +240,11 @@ export default function FleetPage() {
                         <span className="text-sm text-gray-500">({category.weight}% of total)</span>
                       </div>
                       <div className="flex items-center gap-4">
-                        <div className="flex items-center gap-2">
-                          <div className="w-32 h-2 bg-gray-200 dark:bg-gray-700 rounded-full">
-                            <div 
-                              className="h-full bg-blue-500 rounded-full transition-all duration-300" 
-                              style={{ width: `${category.completionPercentage}%` }}
-                            />
-                          </div>
-                          <span className="text-sm font-bold text-blue-600 min-w-[3ch]">
-                            {category.completionPercentage}%
-                          </span>
+                        <div className="w-32 h-2 bg-gray-200 dark:bg-gray-700 rounded-full">
+                          <div 
+                            className="h-full bg-blue-500 rounded-full transition-all duration-300" 
+                            style={{ width: `${category.completionPercentage}%` }}
+                          />
                         </div>
                         <Button variant="ghost" size="sm">
                           {expandedCategories.includes(category.id) ? <Minus className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
@@ -259,29 +254,38 @@ export default function FleetPage() {
                     {expandedCategories.includes(category.id) && (
                       <div className="px-4 pb-4 border-t border-gray-100 dark:border-gray-700">
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-3">
-                          {category.components.map((component) => (
-                            <div key={component.id} className="flex items-center justify-between text-sm py-1">
-                              <span className={`flex items-center gap-2 ${
-                                component.status === 'completed' ? 'text-green-600 dark:text-green-400' :
-                                component.status === 'in-progress' ? 'text-orange-600 dark:text-orange-400' :
-                                'text-gray-500 dark:text-gray-400'
-                              }`}>
-                                <span className="w-4 text-center">
-                                  {component.status === 'completed' ? '✓' : 
-                                   component.status === 'in-progress' ? '◐' : '○'}
+                          {category.components.map((component) => {
+                            // Calculate the weighted total for this component (category weight * component weight / 100)
+                            const weightedTotal = (category.weight * component.weight / 100).toFixed(1);
+                            return (
+                              <div key={component.id} className="flex items-center justify-between text-sm py-1">
+                                <div className="flex items-center gap-2 flex-1">
+                                  <span className={`flex items-center gap-2 ${
+                                    component.status === 'completed' ? 'text-green-600 dark:text-green-400' :
+                                    component.status === 'in-progress' ? 'text-orange-600 dark:text-orange-400' :
+                                    'text-gray-500 dark:text-gray-400'
+                                  }`}>
+                                    <span className="w-4 text-center">
+                                      {component.status === 'completed' ? '✓' : 
+                                       component.status === 'in-progress' ? '◐' : '○'}
+                                    </span>
+                                    {component.name}
+                                  </span>
+                                  <span className="text-xs text-gray-400 ml-2">
+                                    ({weightedTotal}%)
+                                  </span>
+                                </div>
+                                <span className={`text-xs px-2 py-1 rounded ${
+                                  component.status === 'completed' ? 'bg-green-100 text-green-800' :
+                                  component.status === 'in-progress' ? 'bg-orange-100 text-orange-800' :
+                                  'bg-gray-100 text-gray-600'
+                                }`}>
+                                  {component.status === 'completed' ? 'Complete' :
+                                   component.status === 'in-progress' ? 'In Progress' : 'Pending'}
                                 </span>
-                                {component.name}
-                              </span>
-                              <span className={`text-xs px-2 py-1 rounded ${
-                                component.status === 'completed' ? 'bg-green-100 text-green-800' :
-                                component.status === 'in-progress' ? 'bg-orange-100 text-orange-800' :
-                                'bg-gray-100 text-gray-600'
-                              }`}>
-                                {component.status === 'completed' ? 'Complete' :
-                                 component.status === 'in-progress' ? 'In Progress' : 'Pending'}
-                              </span>
-                            </div>
-                          ))}
+                              </div>
+                            )
+                          })}
                         </div>
                       </div>
                     )}
