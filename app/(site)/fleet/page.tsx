@@ -184,13 +184,19 @@ export default function FleetPage() {
 
       {/* Build Progress Modal */}
       {selectedDrone && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <Card className="w-full max-w-4xl max-h-[90vh] overflow-y-auto bg-white dark:bg-gray-900">
+        <div 
+          className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50"
+          onClick={() => setSelectedDrone(null)}
+        >
+          <Card 
+            className="w-full max-w-4xl max-h-[90vh] overflow-y-auto bg-white dark:bg-gray-900"
+            onClick={(e) => e.stopPropagation()}
+          >
             <CardHeader className="pb-4">
               <div className="flex items-start justify-between">
                 <div>
                   <CardTitle className="text-3xl font-bold text-gray-900 dark:text-white">
-                    Drone {selectedDrone.serial} - Detailed Breakdown
+                    Serial: {selectedDrone.serial}
                   </CardTitle>
                   <p className="text-gray-500 dark:text-gray-400 mt-1">
                     Complete component status and progress tracking
@@ -218,11 +224,8 @@ export default function FleetPage() {
             <CardContent className="space-y-6">
               {/* Overall Progress - Combined */}
               <div>
-                <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center mb-3">
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Build Progress</h3>
-                  <span className={`text-2xl font-bold ${getProgressColor(selectedDrone.overallCompletion)}`}>
-                    {selectedDrone.overallCompletion}%
-                  </span>
                 </div>
                 <div className="relative">
                   <div className="w-full h-4 bg-gray-200 dark:bg-gray-700 rounded-full">
@@ -299,32 +302,6 @@ export default function FleetPage() {
                   </div>
                 ))}
               </div>
-
-              {/* Build Timeline */}
-              {(selectedDrone.startDate || selectedDrone.estimatedCompletion) && (
-                <div className="grid grid-cols-2 gap-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                  {selectedDrone.startDate && (
-                    <div>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">
-                        Build Started
-                      </p>
-                      <p className="text-sm font-medium text-gray-900 dark:text-white">
-                        {new Date(selectedDrone.startDate).toLocaleDateString()}
-                      </p>
-                    </div>
-                  )}
-                  {selectedDrone.estimatedCompletion && (
-                    <div>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">
-                        Estimated Completion
-                      </p>
-                      <p className="text-sm font-medium text-gray-900 dark:text-white">
-                        {new Date(selectedDrone.estimatedCompletion).toLocaleDateString()}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              )}
 
               <div className="flex justify-end pt-4 border-t border-gray-200 dark:border-gray-700">
                 <Button
