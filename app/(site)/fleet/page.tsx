@@ -1,18 +1,39 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Plus, Minus } from "lucide-react"
-import { mockBuildDrones } from "@/lib/mockBuildData"
 import { BuildDrone } from "@/lib/types"
 
 export default function FleetPage() {
   const [selectedStatus, setSelectedStatus] = useState("all")
   const [selectedDrone, setSelectedDrone] = useState<BuildDrone | null>(null)
   const [expandedCategories, setExpandedCategories] = useState<string[]>([])
+  const [drones, setDrones] = useState<BuildDrone[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetchDrones()
+  }, [])
+
+  const fetchDrones = async () => {
+    try {
+      const response = await fetch('/api/drones')
+      if (response.ok) {
+        const data = await response.json()
+        setDrones(data)
+      } else {
+        console.error('Failed to fetch drones')
+      }
+    } catch (error) {
+      console.error('Error fetching drones:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const toggleCategory = (categoryId: string) => {
     setExpandedCategories(prev => 
@@ -22,7 +43,7 @@ export default function FleetPage() {
     )
   }
 
-  const filteredDrones = mockBuildDrones.filter(drone => {
+  const filteredDrones = drones.filter(drone => {
     if (selectedStatus === "all") return true
     if (selectedStatus === "in-progress") {
       return drone.status === "in-progress" || (drone.overallCompletion > 0 && drone.overallCompletion < 100)
@@ -34,10 +55,10 @@ export default function FleetPage() {
   })
 
   const statusCounts = {
-    all: mockBuildDrones.length,
-    'in-progress': mockBuildDrones.filter(d => d.status === 'in-progress' || (d.overallCompletion > 0 && d.overallCompletion < 100)).length,
-    'pending': mockBuildDrones.filter(d => d.status === 'pending' || d.overallCompletion === 0).length,
-    'completed': mockBuildDrones.filter(d => d.status === 'completed').length,
+    all: drones.length,
+    'in-progress': drones.filter(d => d.status === 'in-progress' || (d.overallCompletion > 0 && d.overallCompletion < 100)).length,
+    'pending': drones.filter(d => d.status === 'pending' || d.overallCompletion === 0).length,
+    'completed': drones.filter(d => d.status === 'completed').length,
   }
 
   const getStatusColor = (status: string) => {
@@ -63,6 +84,14 @@ export default function FleetPage() {
     if (progress >= 70) return 'text-blue-600 dark:text-blue-400'
     if (progress >= 40) return 'text-orange-600 dark:text-orange-400'
     return 'text-gray-600 dark:text-gray-400'
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    )
   }
 
   return (

@@ -11,13 +11,15 @@ import {
   Sun,
   Moon,
   Menu,
-  X
+  X,
+  Shield
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 const navigation = [
   { name: 'Dashboard', href: '/', icon: Home },
   { name: 'Fleet', href: '/fleet', icon: Plane },
+  { name: 'Admin', href: '/admin', icon: Shield },
   { name: 'Settings', href: '/settings', icon: Settings },
 ]
 

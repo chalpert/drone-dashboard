@@ -1,0 +1,91 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Drone {
+  id                    String         @id @default(cuid())
+  serial                String         @unique
+  model                 String
+  status                String         // pending, in-progress, completed
+  overallCompletion     Float          @default(0)
+  startDate             DateTime?
+  estimatedCompletion   DateTime?
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime       @updatedAt
+  
+  categories            DroneCategory[]
+  buildActivities       BuildActivity[]
+  
+  @@map("drones")
+}
+
+model ComponentDefinition {
+  id                    String         @id @default(cuid())
+  name                  String
+  categoryId            String
+  weight                Float          // percentage weight within category
+  
+  category              CategoryDefinition @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  droneComponents       DroneComponent[]
+  
+  @@map("component_definitions")
+}
+
+model CategoryDefinition {
+  id                    String         @id @default(cuid())
+  name                  String         @unique
+  weight                Float          // percentage weight of total drone
+  
+  components            ComponentDefinition[]
+  droneCategories       DroneCategory[]
+  
+  @@map("category_definitions")
+}
+
+model DroneCategory {
+  id                    String         @id @default(cuid())
+  droneId               String
+  categoryDefinitionId  String
+  completionPercentage  Float          @default(0)
+  
+  drone                 Drone          @relation(fields: [droneId], references: [id], onDelete: Cascade)
+  categoryDefinition    CategoryDefinition @relation(fields: [categoryDefinitionId], references: [id])
+  components            DroneComponent[]
+  
+  @@unique([droneId, categoryDefinitionId])
+  @@map("drone_categories")
+}
+
+model DroneComponent {
+  id                    String         @id @default(cuid())
+  droneCategoryId       String
+  componentDefinitionId String
+  status                String         @default("pending") // pending, in-progress, completed
+  
+  droneCategory         DroneCategory  @relation(fields: [droneCategoryId], references: [id], onDelete: Cascade)
+  componentDefinition   ComponentDefinition @relation(fields: [componentDefinitionId], references: [id])
+  
+  @@unique([droneCategoryId, componentDefinitionId])
+  @@map("drone_components")
+}
+
+model BuildActivity {
+  id                    String         @id @default(cuid())
+  droneId               String
+  componentName         String
+  action                String         // started, completed, updated
+  status                String         // pending, in-progress, completed
+  timestamp             DateTime       @default(now())
+  
+  drone                 Drone          @relation(fields: [droneId], references: [id], onDelete: Cascade)
+  
+  @@map("build_activities")
+}
