@@ -16,17 +16,27 @@ const nextConfig: NextConfig = {
       },
       {
         source: '/intelligence',
-        destination: '/logs',
+        destination: '/fleet',
         permanent: false,
       },
       {
         source: '/operations', 
-        destination: '/missions',
+        destination: '/fleet',
         permanent: false,
       },
       {
         source: '/systems',
         destination: '/settings',
+        permanent: false,
+      },
+      {
+        source: '/missions',
+        destination: '/fleet',
+        permanent: false,
+      },
+      {
+        source: '/logs',
+        destination: '/fleet',
         permanent: false,
       },
     ]

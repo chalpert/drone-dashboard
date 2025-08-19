@@ -7,8 +7,6 @@ import {
   ChevronRight, 
   Home, 
   Plane, 
-  Target, 
-  ClipboardList, 
   Settings,
   Sun,
   Moon,
@@ -20,8 +18,6 @@ import { Button } from "@/components/ui/button"
 const navigation = [
   { name: 'Dashboard', href: '/', icon: Home },
   { name: 'Fleet', href: '/fleet', icon: Plane },
-  { name: 'Missions', href: '/missions', icon: Target },
-  { name: 'Logs', href: '/logs', icon: ClipboardList },
   { name: 'Settings', href: '/settings', icon: Settings },
 ]
 
