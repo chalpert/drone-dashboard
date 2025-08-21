@@ -1,6 +1,8 @@
-# 🚁 Drone Dashboard - Fleet Management System
+# 🚁 Drone Dashboard - Production-Ready Fleet Management System
 
-A comprehensive drone fleet management system built with Next.js 15, TypeScript, and Tailwind CSS. This application provides real-time monitoring, build activity tracking, and complete management capabilities for drone manufacturing and assembly processes.
+A comprehensive, production-ready drone fleet management system built with Next.js 15, TypeScript, and Tailwind CSS. This executive-quality application provides real-time monitoring, build activity tracking, external integrations, and complete management capabilities for drone manufacturing and assembly processes.
+
+**🎯 Status: Production Ready** - Fully optimized for executive presentation, mobile/tablet use, and small startup deployment.
 
 ## ✨ Features
 
@@ -26,11 +28,16 @@ A comprehensive drone fleet management system built with Next.js 15, TypeScript,
 - Real-time progress updates
 
 ### ⚙️ **Advanced Features**
-- Real-time WebSocket integration
-- Dark/light theme support
-- Responsive design (mobile-first)
-- TypeScript for type safety
+- Real-time WebSocket integration with live updates
+- Executive-quality UI with professional styling
+- Full mobile responsiveness (mobile-first, tablet-optimized)
+- External integrations (Slack webhooks, generic webhooks)
+- Production monitoring with health check endpoints
+- Advanced analytics and executive reporting
+- TypeScript for complete type safety
 - Modern UI components with Radix UI
+- Comprehensive testing infrastructure
+- Factory floor optimization for touch devices
 
 ## 🚀 Getting Started
 
@@ -59,15 +66,21 @@ A comprehensive drone fleet management system built with Next.js 15, TypeScript,
    ```
    Configure your environment variables in `.env.local`
 
-4. **Run the development server**
+4. **Set up the database**
    ```bash
-   npm run dev
-   # or
-   yarn dev
+   npx prisma generate
+   npx prisma db push
    ```
 
-5. **Open your browser**
-   Navigate to [http://localhost:3000](http://localhost:3000)
+5. **Run the full application (Next.js + WebSocket)**
+   ```bash
+   npm run dev:all
+   # This starts both Next.js and WebSocket servers
+   ```
+
+6. **Open your browser**
+   Navigate to [http://localhost:3001](http://localhost:3001) (Next.js)
+   WebSocket server runs on port 3003
 
 ### Build for Production
 
@@ -76,16 +89,33 @@ npm run build
 npm start
 ```
 
+### Health Monitoring
+
+The application includes comprehensive health monitoring:
+- `GET /api/health` - Overall system health
+- `GET /api/health/database` - Database connectivity and statistics
+- `GET /api/health/websocket` - WebSocket server status
+
+### Testing
+
+```bash
+npm run test        # Run tests in watch mode
+npm run test:run    # Run tests once
+```
+
 ## 🏗️ Architecture
 
 ### Technology Stack
 - **Framework**: Next.js 15 (App Router)
-- **Language**: TypeScript
-- **Styling**: Tailwind CSS
+- **Language**: TypeScript (strict mode)
+- **Database**: Prisma + SQLite
+- **Styling**: Tailwind CSS v4
 - **UI Components**: Radix UI + Custom Components
 - **Icons**: Lucide React
-- **Real-time**: WebSocket integration
-- **State Management**: React useState/useEffect
+- **Real-time**: WebSocket integration (Socket.IO)
+- **Testing**: Vitest + React Testing Library
+- **State Management**: React useState/useEffect + WebSocket context
+- **External Integrations**: Slack webhooks, generic webhook system
 
 ### Project Structure
 ```
@@ -133,10 +163,23 @@ Drone
 - `GET /api/drones` - Fetch all drones with full hierarchy
 - `PATCH /api/drones/[serial]/components` - Update item status
 
+### Health Monitoring
+- `GET /api/health` - Overall system health check
+- `GET /api/health/database` - Database connectivity and statistics
+- `GET /api/health/websocket` - WebSocket server status
+
+### Executive Reporting
+- `GET /api/reports/executive` - Executive summary with analytics
+
+### External Integrations
+- `POST /api/webhooks/slack` - Slack notification endpoint
+- `POST /api/webhooks/generic` - Generic webhook endpoint
+
 ### Real-time Features
-- WebSocket connection for live updates
+- WebSocket connection for live updates (port 3003)
 - System health monitoring
 - Build progress streaming
+- Real-time notifications and alerts
 
 ## 🎨 UI Components
 
@@ -148,10 +191,12 @@ Drone
 - **Card**: Container components
 
 ### Responsive Design
-- Mobile-first approach
-- Collapsible sidebar navigation
-- Touch-friendly interfaces
-- Adaptive layouts
+- Mobile-first approach with comprehensive breakpoints
+- Factory floor optimization (larger touch targets, enhanced contrast)
+- Executive tablet experience (professional spacing, optimized layouts)
+- Touch-friendly interfaces with enhanced gesture support
+- Adaptive layouts across all device sizes
+- Enhanced mobile navigation with larger touch targets
 
 ## 📈 Features Overview
 
@@ -180,8 +225,20 @@ Drone
 Create a `.env.local` file with:
 
 ```env
-NEXT_PUBLIC_WS_URL=ws://localhost:3001
-NEXT_PUBLIC_API_BASE_URL=http://localhost:3000
+# Database
+DATABASE_URL="file:./dev.db"
+
+# WebSocket Configuration
+NEXT_PUBLIC_WS_URL=ws://localhost:3003
+NEXT_PUBLIC_API_BASE_URL=http://localhost:3001
+
+# Slack Integration (Optional)
+# SLACK_WEBHOOK_URL=https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK
+# SLACK_CHANNEL=#drone-assembly
+# SLACK_ENABLE_MILESTONES=true
+
+# Generic Webhooks (Optional)
+# WEBHOOK_ENDPOINT_1=https://api.example.com/drone-updates
 ```
 
 ## 🧪 Development
@@ -193,28 +250,53 @@ NEXT_PUBLIC_API_BASE_URL=http://localhost:3000
 - Component prop validation
 
 ### Scripts
-- `npm run dev` - Development server
-- `npm run build` - Production build
-- `npm run start` - Start production server
+- `npm run dev` - Next.js development server only
+- `npm run dev:all` - Start both Next.js and WebSocket servers
+- `npm run build` - Production build (Next.js + WebSocket server)
+- `npm run start` - Start production server (both services)
 - `npm run lint` - Run ESLint
-- `npm run type-check` - TypeScript checking
+- `npm run test` - Run tests in watch mode
+- `npm run test:run` - Run tests once
+- `npm run ws:dev` - Start WebSocket server only
 
 ## 🚀 Deployment
 
-### Vercel (Recommended)
+### Production Deployment Script
+Use the included deployment script for automated setup:
+```bash
+chmod +x scripts/deploy.sh
+./scripts/deploy.sh
+```
+
+### Manual Deployment
+1. **Build the application**
+   ```bash
+   npm run build
+   ```
+
+2. **Set up production database**
+   ```bash
+   npx prisma generate
+   npx prisma db push
+   ```
+
+3. **Start production servers**
+   ```bash
+   npm run start
+   ```
+
+### Vercel (Next.js only)
 1. Push to GitHub repository
 2. Connect to Vercel
 3. Configure environment variables
 4. Deploy automatically on push
+5. Note: WebSocket server requires separate hosting
 
-### Docker
-```bash
-# Build image
-docker build -t drone-dashboard .
-
-# Run container
-docker run -p 3000:3000 drone-dashboard
-```
+### Health Check Endpoints
+After deployment, verify system health:
+- `GET /api/health` - Overall system status
+- `GET /api/health/database` - Database connectivity
+- `GET /api/health/websocket` - WebSocket configuration
 
 ## 📝 Contributing
 

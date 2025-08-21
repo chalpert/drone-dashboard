@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
-import { Plus, Minus } from "lucide-react"
+import { Plus, Minus, X } from "lucide-react"
 import { BuildDrone } from "@/lib/types"
 import { SearchFilter } from "@/components/search-filter"
 import { exportToCSV, exportToJSON, generateTimestampedFilename } from "@/lib/export-utils"
@@ -113,20 +113,26 @@ export default function FleetPage() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Build Tracking</h1>
-          <p className="text-gray-500 dark:text-gray-400">
-            Monitor drone build progress and component completion
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Button className="bg-blue-600 hover:bg-blue-700 text-white">
-            <Plus className="w-4 h-4 mr-2" />
-            Start New Build
-          </Button>
+    <div className="space-y-6 sm:space-y-8">
+      {/* Executive Header - Tablet Optimized */}
+      <div className="bg-gradient-to-r from-gray-900 to-gray-800 dark:from-gray-800 dark:to-gray-900 -mx-4 sm:-mx-6 lg:-mx-8 -mt-4 sm:-mt-6 lg:-mt-8 px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 pb-4 sm:pb-6 rounded-t-lg mb-6 sm:mb-8">
+        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+          <div>
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-2">Fleet Management</h1>
+            <p className="text-gray-300 text-base sm:text-lg">
+              Comprehensive oversight of drone manufacturing and assembly operations
+            </p>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center w-full lg:w-auto">
+            <div className="text-gray-300 text-sm text-left sm:text-right">
+              <div className="text-xl font-bold text-white">{filteredDrones.length}</div>
+              <div>Total Units</div>
+            </div>
+            <Button className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 text-base font-medium w-full sm:w-auto touch-manipulation">
+              <Plus className="w-5 h-5 mr-2" />
+              Initialize New Build
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -138,97 +144,118 @@ export default function FleetPage() {
         className="mb-6"
       />
 
-      {/* Status Filter Stats */}
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+      {/* Executive Status Overview - Tablet Optimized */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         {Object.entries(statusCounts).map(([status, count]) => (
           <Card 
             key={status}
-            className={`cursor-pointer transition-colors ${
+            className={`cursor-pointer transition-all duration-300 hover:shadow-lg transform hover:-translate-y-1 ${
               selectedStatus === status 
-                ? 'ring-2 ring-blue-500 bg-blue-50 dark:bg-blue-900/20' 
-                : 'hover:bg-gray-50 dark:hover:bg-gray-800'
+                ? 'ring-2 ring-blue-500 bg-blue-50 dark:bg-blue-900/20 shadow-lg' 
+                : 'bg-white dark:bg-gray-800 shadow border-0 hover:shadow-xl'
             }`}
             onClick={() => setSelectedStatus(status)}
           >
-            <CardContent className="p-4">
+            <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    {status.replace('-', ' ')}
+                  <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider font-semibold">
+                    {status === 'all' ? 'Total Fleet' : status.replace('-', ' ')}
                   </p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                  <p className="text-3xl font-bold text-gray-900 dark:text-white mt-1">
                     {count}
                   </p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                    {status === 'all' ? 'Units' : 
+                     status === 'in-progress' ? 'Active Builds' :
+                     status === 'pending' ? 'Awaiting Start' : 
+                     'Completed'}
+                  </p>
                 </div>
-                <div className={`w-3 h-3 rounded-full ${getStatusColor(status)}`}></div>
+                <div className={`w-4 h-4 rounded-full ${getStatusColor(status)} shadow-lg`}></div>
               </div>
             </CardContent>
           </Card>
         ))}
       </div>
 
-      {/* Drone Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {/* Fleet Overview Grid - Tablet Optimized */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
         {statusFilteredDrones.map((drone) => (
           <Card 
             key={drone.serial} 
-            className="hover:shadow-md transition-shadow cursor-pointer"
+            className="bg-white dark:bg-gray-800 shadow-lg border-0 hover:shadow-xl transition-all duration-300 cursor-pointer transform hover:-translate-y-1"
             onClick={() => setSelectedDrone(drone)}
           >
-            <CardHeader className="pb-3">
+            <CardHeader className="pb-4 border-b border-gray-100 dark:border-gray-700">
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle className="text-2xl font-bold text-gray-900 dark:text-white">
-                    Serial: {drone.serial}
+                  <CardTitle className="text-xl font-bold text-gray-900 dark:text-white">
+                    Unit {drone.serial}
                   </CardTitle>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    Model: {drone.model}
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                    {drone.model} Platform
                   </p>
                 </div>
-                <Badge variant={getStatusBadgeVariant(drone.status)}>
-                  {drone.status.replace('-', ' ')}
+                <Badge 
+                  variant={getStatusBadgeVariant(drone.status)}
+                  className={`px-3 py-1 text-xs font-medium ${
+                    drone.status === 'completed' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' :
+                    drone.status === 'in-progress' ? 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300' :
+                    'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
+                  }`}
+                >
+                  {drone.status.replace('-', ' ').toUpperCase()}
                 </Badge>
               </div>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
+            <CardContent className="pt-6">
+              <div className="space-y-5">
                 {/* Overall Progress */}
                 <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Overall Progress</span>
-                    <span className={`text-sm font-bold ${getProgressColor(drone.overallCompletion)}`}>
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">Assembly Progress</span>
+                    <span className={`text-lg font-bold ${getProgressColor(drone.overallCompletion)}`}>
                       {drone.overallCompletion}%
                     </span>
                   </div>
-                  <Progress value={drone.overallCompletion} className="h-3" />
+                  <Progress value={drone.overallCompletion} className="h-4 sm:h-5" />
                 </div>
 
                 {/* System Progress */}
-                <div className="space-y-2">
-                  {drone.systems?.map((system) => (
+                <div className="space-y-3 bg-gray-50 dark:bg-gray-700/30 rounded-lg p-4">
+                  <div className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide">
+                    System Status
+                  </div>
+                  {drone.systems?.slice(0, 4).map((system) => (
                     <div key={system.id} className="flex items-center justify-between text-xs">
-                      <span className="text-gray-600 dark:text-gray-400">{system.name}</span>
-                      <div className="w-16 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full">
-                        <div 
-                          className="h-full bg-blue-500 rounded-full transition-all duration-300" 
-                          style={{ width: `${system.completionPercentage}%` }}
-                        />
+                      <span className="text-gray-700 dark:text-gray-300 font-medium">{system.name}</span>
+                      <div className="flex items-center gap-2">
+                        <div className="w-20 h-2 bg-gray-200 dark:bg-gray-600 rounded-full">
+                          <div 
+                            className="h-full bg-gradient-to-r from-blue-500 to-blue-600 rounded-full transition-all duration-500" 
+                            style={{ width: `${system.completionPercentage}%` }}
+                          />
+                        </div>
+                        <span className="text-xs font-semibold text-gray-600 dark:text-gray-400 w-8">
+                          {system.completionPercentage}%
+                        </span>
                       </div>
                     </div>
                   )) || []}
                 </div>
 
-                {/* Action Button */}
+                {/* Action Button - Touch Optimized */}
                 <div className="pt-2">
                   <Button 
                     variant="outline" 
-                    className="w-full"
+                    className="w-full bg-gradient-to-r from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-200 dark:from-blue-900/20 dark:to-blue-800/20 border-blue-200 dark:border-blue-700 text-blue-700 dark:text-blue-300 font-medium py-3 text-base touch-manipulation"
                     onClick={(e) => {
                       e.stopPropagation()
                       setSelectedDrone(drone)
                     }}
                   >
-                    View Build Details
+                    View Detailed Analysis
                   </Button>
                 </div>
               </div>
@@ -237,29 +264,29 @@ export default function FleetPage() {
         ))}
       </div>
 
-      {/* Build Progress Modal */}
+      {/* Build Progress Modal - Touch Optimized */}
       {selectedDrone && (
         <div 
-          className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50"
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 z-50"
           onClick={() => setSelectedDrone(null)}
         >
           <Card 
-            className="w-full max-w-4xl max-h-[90vh] overflow-y-auto bg-white dark:bg-gray-900"
+            className="w-full max-w-5xl max-h-[92vh] overflow-y-auto bg-white dark:bg-gray-900 shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
-            <CardHeader className="pb-4">
-              <div className="flex items-start justify-between">
+            <CardHeader className="pb-4 sm:pb-6">
+              <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
                 <div>
-                  <CardTitle className="text-3xl font-bold text-gray-900 dark:text-white">
-                    Serial: {selectedDrone.serial}
+                  <CardTitle className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
+                    Unit {selectedDrone.serial}
                   </CardTitle>
-                  <p className="text-gray-500 dark:text-gray-400 mt-1">
+                  <p className="text-gray-500 dark:text-gray-400 mt-1 text-base">
                     Complete component status and progress tracking
                   </p>
                 </div>
                 <div className="flex items-center gap-4">
-                  <div className="text-right">
-                    <div className="text-3xl font-bold text-blue-600">
+                  <div className="text-left sm:text-right">
+                    <div className="text-2xl sm:text-3xl font-bold text-blue-600">
                       {selectedDrone.overallCompletion}%
                     </div>
                     <div className="text-sm text-gray-500">
@@ -269,9 +296,9 @@ export default function FleetPage() {
                   <Button
                     variant="ghost"
                     onClick={() => setSelectedDrone(null)}
-                    className="text-gray-400 hover:text-gray-900 dark:hover:text-white p-2 rounded-md"
+                    className="text-gray-400 hover:text-gray-900 dark:hover:text-white h-12 w-12 touch-manipulation"
                   >
-                    ✕
+                    <X className="w-6 h-6" />
                   </Button>
                 </div>
               </div>
@@ -311,8 +338,8 @@ export default function FleetPage() {
                             style={{ width: `${system.completionPercentage}%` }}
                           />
                         </div>
-                        <Button variant="ghost" size="sm">
-                          {expandedSystems.includes(system.id) ? <Minus className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+                        <Button variant="ghost" className="h-10 w-10 touch-manipulation">
+                          {expandedSystems.includes(system.id) ? <Minus className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
                         </Button>
                       </div>
                     </div>
@@ -344,8 +371,8 @@ export default function FleetPage() {
                                       item.status === 'in-progress' ? 'bg-orange-100 text-orange-700' :
                                       'bg-gray-100 text-gray-600'
                                     }`}>
-                                      {item.status === 'completed' ? 'Done' :
-                                       item.status === 'in-progress' ? 'WIP' : 'Todo'}
+                                      {item.status === 'completed' ? 'Completed' :
+                                       item.status === 'in-progress' ? 'In Progress' : 'Pending'}
                                     </span>
                                   </div>
                                 )) || []}
@@ -359,12 +386,12 @@ export default function FleetPage() {
                 )) || []}
               </div>
 
-              <div className="flex justify-end pt-4 border-t border-gray-200 dark:border-gray-700">
+              <div className="flex justify-center sm:justify-end pt-6 border-t border-gray-200 dark:border-gray-700">
                 <Button
                   onClick={() => setSelectedDrone(null)}
-                  className="bg-gray-600 hover:bg-gray-700 text-white"
+                  className="bg-gray-600 hover:bg-gray-700 text-white px-8 py-3 text-base font-medium w-full sm:w-auto touch-manipulation"
                 >
-                  Close
+                  Close Analysis
                 </Button>
               </div>
             </CardContent>

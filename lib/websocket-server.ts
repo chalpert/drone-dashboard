@@ -17,7 +17,7 @@ export class WebSocketServer {
   private httpServer: HttpServer | null = null
   private updateInterval: NodeJS.Timeout | null = null
 
-  constructor(port: number = 3001) {
+  constructor(port: number = 3003) {
     this.httpServer = createServer()
     this.io = new Server(this.httpServer, {
       cors: {

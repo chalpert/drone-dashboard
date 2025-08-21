@@ -18,7 +18,7 @@ class WebSocketClient {
       return this.socket
     }
 
-    this.socket = io(serverPath || process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:3001', {
+    this.socket = io(serverPath || process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:3003', {
       transports: ['websocket', 'polling'],
       upgrade: true,
       rememberUpgrade: true,
