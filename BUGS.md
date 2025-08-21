@@ -98,7 +98,7 @@ Theme state was managed using local `useState` in the site layout component, whi
 - [x] Proper SSR hydration without mismatches
 
 **GitHub Issue**: [#2](https://github.com/chalpert/drone-dashboard/issues/2)  
-**Pull Request**: TBD  
+**Pull Request**: [#3](https://github.com/chalpert/drone-dashboard/pull/3)  
 
 ---
 
@@ -130,7 +130,7 @@ Fixed by implementing a proper ThemeProvider component with localStorage persist
 - `app/(site)/layout.tsx` - Site layout theme integration
 
 **GitHub Issue**: [#2](https://github.com/chalpert/drone-dashboard/issues/2)  
-**Pull Request**: TBD
+**Pull Request**: [#3](https://github.com/chalpert/drone-dashboard/pull/3)
 
 ---
 
