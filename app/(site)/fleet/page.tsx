@@ -59,8 +59,8 @@ export default function FleetPage() {
 
   const statusCounts = {
     all: filteredDrones.length,
-    'in-progress': filteredDrones.filter(d => d.status === 'in-progress' || (d.overallCompletion > 0 && d.overallCompletion < 100)).length,
     'pending': filteredDrones.filter(d => d.status === 'pending' || d.overallCompletion === 0).length,
+    'in-progress': filteredDrones.filter(d => d.status === 'in-progress' || (d.overallCompletion > 0 && d.overallCompletion < 100)).length,
     'completed': filteredDrones.filter(d => d.status === 'completed').length,
   }
 
@@ -104,8 +104,8 @@ export default function FleetPage() {
 
 
 
-      {/* Executive Status Overview - Compact Design */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+      {/* Executive Status Overview - Ultra Compact Design */}
+      <div className="grid grid-cols-4 gap-2 sm:gap-3">
         {Object.entries(statusCounts).map(([status, count]) => (
           <Card
             key={status}
@@ -113,20 +113,22 @@ export default function FleetPage() {
               selectedStatus === status
                 ? 'ring-2 ring-blue-500 bg-blue-50 dark:bg-blue-900/20 shadow-lg'
                 : 'bg-white dark:bg-gray-800 shadow border-0 hover:shadow-xl'
-            }`}
+            } ${status === 'all' ? 'col-span-1' : 'col-span-1'}`}
             onClick={() => setSelectedStatus(status)}
           >
-            <CardContent className="p-3">
-              <div className="flex items-center justify-between">
-                <div>
+            <CardContent className="p-2">
+              <div className={`flex items-center ${status === 'all' ? 'justify-center' : 'justify-between'}`}>
+                <div className={status === 'all' ? 'text-center' : ''}>
                   <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider font-semibold">
                     {status === 'all' ? 'Total Fleet' : status.replace('-', ' ')}
                   </p>
-                  <p className="text-xl font-bold text-gray-900 dark:text-white mt-0.5">
+                  <p className="text-lg font-bold text-gray-900 dark:text-white mt-0.5">
                     {count}
                   </p>
                 </div>
-                <div className={`w-3 h-3 rounded-full ${getStatusColor(status)} shadow-lg`}></div>
+                {status !== 'all' && (
+                  <div className={`w-2 h-2 rounded-full ${getStatusColor(status)} shadow-lg`}></div>
+                )}
               </div>
             </CardContent>
           </Card>
