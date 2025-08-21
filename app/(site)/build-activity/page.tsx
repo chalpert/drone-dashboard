@@ -15,6 +15,7 @@ import { RealTimeIndicator } from "@/components/real-time-provider"
 interface AssemblyWorkflowData {
   selectedDrones: string[]
   selectedSystem: string
+  selectedAssembly: string
   selectedItems: string[]
   status: ItemStatus
   notes: string
@@ -31,6 +32,7 @@ export default function BuildActivityPage() {
   const [workflowForm, setWorkflowForm] = useState<AssemblyWorkflowData>({
     selectedDrones: [],
     selectedSystem: '',
+    selectedAssembly: '',
     selectedItems: [],
     status: 'pending',
     notes: ''
@@ -108,6 +110,7 @@ export default function BuildActivityPage() {
         setWorkflowForm({
           selectedDrones: [],
           selectedSystem: '',
+          selectedAssembly: '',
           selectedItems: [],
           status: 'pending',
           notes: ''
@@ -141,20 +144,31 @@ export default function BuildActivityPage() {
     return Array.from(systemsSet)
   }
 
-  const getAvailableItemsForSystem = () => {
+  const getAvailableAssemblies = () => {
+    const assembliesSet = new Set<string>()
+    workflowForm.selectedDrones.forEach(droneSerial => {
+      const drone = drones.find(d => d.serial === droneSerial)
+      const system = drone?.systems.find(s => s.name === workflowForm.selectedSystem)
+      system?.assemblies.forEach(assembly => {
+        assembliesSet.add(assembly.name)
+      })
+    })
+    return Array.from(assembliesSet)
+  }
+
+  const getAvailableItemsForAssembly = () => {
     const itemsMap = new Map<string, { id: string; name: string; status: string }>()
 
     workflowForm.selectedDrones.forEach(droneSerial => {
       const drone = drones.find(d => d.serial === droneSerial)
       const system = drone?.systems.find(s => s.name === workflowForm.selectedSystem)
+      const assembly = system?.assemblies.find(a => a.name === workflowForm.selectedAssembly)
 
-      system?.assemblies.forEach(assembly => {
-        assembly.items.forEach(item => {
-          itemsMap.set(item.id, {
-            id: item.id,
-            name: `${assembly.name} - ${item.name}`,
-            status: item.status
-          })
+      assembly?.items.forEach(item => {
+        itemsMap.set(item.id, {
+          id: item.id,
+          name: item.name,
+          status: item.status
         })
       })
     })
@@ -193,50 +207,17 @@ export default function BuildActivityPage() {
   }
 
   return (
-    <div className="space-y-6 sm:space-y-8">
-      {/* Simple Functional Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-gray-200 dark:border-gray-700">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">Assembly Workflow</h1>
-          <p className="text-gray-600 dark:text-gray-400 text-base sm:text-lg mt-1">
-            Update build progress for assembly team
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
-          <RealTimeIndicator className="text-sm bg-blue-50 dark:bg-blue-900/20 px-3 py-2 rounded-lg text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800" />
-          <div className="text-gray-600 dark:text-gray-400 text-sm">
-            <div className="text-lg font-semibold text-gray-900 dark:text-white">{activities.length}</div>
-            <div>Recent Updates</div>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Assembly Workflow Form */}
-      <Card className="bg-white dark:bg-gray-800 shadow-lg border-0">
-        <CardHeader className="border-b border-gray-100 dark:border-gray-700 pb-6">
-          <CardTitle className="flex items-center gap-3 text-xl font-bold text-gray-900 dark:text-white">
-            <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-              <Wrench className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-            </div>
-            Assembly Team Workflow
-            {submitSuccess && (
-              <Badge className="bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400 border-green-200 dark:border-green-700">
-                ✓ Updates Submitted Successfully
-              </Badge>
-            )}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="pt-8">
-          <div className="space-y-8">
-            {/* Step 1: Drone Selection */}
-            <div className="space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="flex items-center justify-center w-8 h-8 bg-blue-600 text-white rounded-full text-sm font-bold">1</div>
-                <Label className="text-lg font-semibold text-gray-900 dark:text-white">Select Drone(s)</Label>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 ml-11">
+    <div className="space-y-6">
+      {/* Streamlined Assembly Form */}
+      <Card className="bg-white dark:bg-gray-800 shadow-sm border border-gray-200 dark:border-gray-700">
+        <CardContent className="p-6">
+          <div className="space-y-6">
+            {/* Drone Selection Grid */}
+            <div>
+              <Label className="text-base font-medium text-gray-900 dark:text-white mb-3 block">Select Drones</Label>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 max-h-32 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-lg p-3">
                 {drones.map((drone) => (
-                  <div key={drone.serial} className="flex items-center space-x-3 p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                  <div key={drone.serial} className="flex items-center space-x-2 p-2 hover:bg-gray-50 dark:hover:bg-gray-700/50 rounded">
                     <Checkbox
                       id={`drone-${drone.serial}`}
                       checked={workflowForm.selectedDrones.includes(drone.serial)}
@@ -244,223 +225,190 @@ export default function BuildActivityPage() {
                         if (checked) {
                           setWorkflowForm(prev => ({
                             ...prev,
-                            selectedDrones: [...prev.selectedDrones, drone.serial],
-                            selectedSystem: '',
-                            selectedItems: []
+                            selectedDrones: [...prev.selectedDrones, drone.serial]
                           }))
                         } else {
                           setWorkflowForm(prev => ({
                             ...prev,
-                            selectedDrones: prev.selectedDrones.filter(s => s !== drone.serial),
-                            selectedSystem: '',
-                            selectedItems: []
+                            selectedDrones: prev.selectedDrones.filter(s => s !== drone.serial)
                           }))
                         }
                       }}
-                      className="w-5 h-5"
+                      className="w-4 h-4"
                     />
-                    <div className="flex-1">
-                      <label htmlFor={`drone-${drone.serial}`} className="text-base font-medium text-gray-900 dark:text-white cursor-pointer">
+                    <div className="flex-1 min-w-0">
+                      <label htmlFor={`drone-${drone.serial}`} className="text-sm font-medium text-gray-900 dark:text-white cursor-pointer block truncate">
                         {drone.serial}
                       </label>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">{drone.model} - {drone.overallCompletion}% complete</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">{drone.overallCompletion}%</p>
                     </div>
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* Step 2: System Selection */}
-            {workflowForm.selectedDrones.length > 0 && (
-              <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center justify-center w-8 h-8 bg-blue-600 text-white rounded-full text-sm font-bold">2</div>
-                  <Label className="text-lg font-semibold text-gray-900 dark:text-white">Select System Category</Label>
-                </div>
-                <div className="ml-11">
-                  <Select
-                    value={workflowForm.selectedSystem}
-                    onValueChange={(value) => setWorkflowForm(prev => ({ ...prev, selectedSystem: value, selectedItems: [] }))}
-                  >
-                    <SelectTrigger className="w-full max-w-md h-12 text-base">
-                      <SelectValue placeholder="Choose system category..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {getAvailableSystems().map((systemName) => (
-                        <SelectItem key={systemName} value={systemName} className="text-base py-3">
-                          {systemName}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+            {/* System, Assembly, Item Dropdowns */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <Label className="text-sm font-medium text-gray-900 dark:text-white mb-2 block">System</Label>
+                <Select
+                  value={workflowForm.selectedSystem}
+                  onValueChange={(value) => setWorkflowForm(prev => ({ ...prev, selectedSystem: value, selectedItems: [] }))}
+                >
+                  <SelectTrigger className="h-10">
+                    <SelectValue placeholder="Select system..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {getAvailableSystems().map((systemName) => (
+                      <SelectItem key={systemName} value={systemName}>
+                        {systemName}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
-            )}
 
-            {/* Step 3: Item Selection */}
-            {workflowForm.selectedSystem && (
-              <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center justify-center w-8 h-8 bg-blue-600 text-white rounded-full text-sm font-bold">3</div>
-                  <Label className="text-lg font-semibold text-gray-900 dark:text-white">Select Items/Components</Label>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 ml-11">
-                  {getAvailableItemsForSystem().map((item) => (
-                    <div key={item.id} className="flex items-center space-x-3 p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
-                      <Checkbox
-                        id={`item-${item.id}`}
-                        checked={workflowForm.selectedItems.includes(item.id)}
-                        onCheckedChange={(checked) => {
-                          if (checked) {
-                            setWorkflowForm(prev => ({
-                              ...prev,
-                              selectedItems: [...prev.selectedItems, item.id]
-                            }))
-                          } else {
-                            setWorkflowForm(prev => ({
-                              ...prev,
-                              selectedItems: prev.selectedItems.filter(id => id !== item.id)
-                            }))
-                          }
-                        }}
-                        className="w-5 h-5"
-                      />
-                      <div className="flex-1">
-                        <label htmlFor={`item-${item.id}`} className="text-base font-medium text-gray-900 dark:text-white cursor-pointer">
-                          {item.name}
-                        </label>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">Current: {item.status}</p>
+              <div>
+                <Label className="text-sm font-medium text-gray-900 dark:text-white mb-2 block">Assembly</Label>
+                <Select
+                  value={workflowForm.selectedAssembly || ''}
+                  onValueChange={(value) => setWorkflowForm(prev => ({ ...prev, selectedAssembly: value, selectedItems: [] }))}
+                  disabled={!workflowForm.selectedSystem}
+                >
+                  <SelectTrigger className="h-10">
+                    <SelectValue placeholder="Select assembly..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {getAvailableAssemblies().map((assemblyName) => (
+                      <SelectItem key={assemblyName} value={assemblyName}>
+                        {assemblyName}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label className="text-sm font-medium text-gray-900 dark:text-white mb-2 block">Item</Label>
+                <Select
+                  value={workflowForm.selectedItems.length === 1 ? workflowForm.selectedItems[0] : ''}
+                  onValueChange={(value) => setWorkflowForm(prev => ({ ...prev, selectedItems: [value] }))}
+                  disabled={!workflowForm.selectedAssembly}
+                >
+                  <SelectTrigger className="h-10">
+                    <SelectValue placeholder="Select item..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {getAvailableItemsForAssembly().map((item) => (
+                      <SelectItem key={item.id} value={item.id}>
+                        {item.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Status and Notes */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <Label className="text-sm font-medium text-gray-900 dark:text-white mb-2 block">Status</Label>
+                <Select
+                  value={workflowForm.status}
+                  onValueChange={(value) => setWorkflowForm(prev => ({ ...prev, status: value as ItemStatus }))}
+                >
+                  <SelectTrigger className="h-10">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="pending">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
+                        Pending
                       </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Step 4: Status and Notes */}
-            {workflowForm.selectedItems.length > 0 && (
-              <div className="space-y-6">
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center justify-center w-8 h-8 bg-blue-600 text-white rounded-full text-sm font-bold">4</div>
-                  <Label className="text-lg font-semibold text-gray-900 dark:text-white">Status & Work Notes</Label>
-                </div>
-                <div className="ml-11 space-y-6">
-                  <div>
-                    <Label className="text-base font-medium text-gray-900 dark:text-white mb-3 block">Update Status</Label>
-                    <Select
-                      value={workflowForm.status}
-                      onValueChange={(value) => setWorkflowForm(prev => ({ ...prev, status: value as ItemStatus }))}
-                    >
-                      <SelectTrigger className="w-full max-w-md h-12 text-base">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="pending" className="text-base py-3">
-                          <div className="flex items-center gap-2">
-                            <div className="w-3 h-3 bg-gray-400 rounded-full"></div>
-                            Pending
-                          </div>
-                        </SelectItem>
-                        <SelectItem value="in-progress" className="text-base py-3">
-                          <div className="flex items-center gap-2">
-                            <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-                            In Progress
-                          </div>
-                        </SelectItem>
-                        <SelectItem value="completed" className="text-base py-3">
-                          <div className="flex items-center gap-2">
-                            <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                            Completed
-                          </div>
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div>
-                    <Label className="text-base font-medium text-gray-900 dark:text-white mb-3 block">Work Notes</Label>
-                    <Textarea
-                      placeholder="Document the work performed, any issues encountered, next steps, or other important details..."
-                      value={workflowForm.notes}
-                      onChange={(e) => setWorkflowForm(prev => ({ ...prev, notes: e.target.value }))}
-                      rows={6}
-                      className="w-full text-base p-4 resize-none"
-                    />
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-                      Detailed notes help track progress and communicate with other team members
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Step 5: Submit */}
-            {workflowForm.selectedItems.length > 0 && (
-              <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center justify-center w-8 h-8 bg-blue-600 text-white rounded-full text-sm font-bold">5</div>
-                  <Label className="text-lg font-semibold text-gray-900 dark:text-white">Submit Updates</Label>
-                </div>
-                <div className="ml-11">
-                  <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-6">
-                    <div className="space-y-3 mb-6">
-                      <p className="text-base font-medium text-gray-900 dark:text-white">Ready to submit:</p>
-                      <div className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
-                        <p>• <strong>{workflowForm.selectedDrones.length}</strong> drone(s): {workflowForm.selectedDrones.join(', ')}</p>
-                        <p>• <strong>{workflowForm.selectedItems.length}</strong> item(s) in <strong>{workflowForm.selectedSystem}</strong></p>
-                        <p>• Status: <strong className="capitalize">{workflowForm.status}</strong></p>
+                    </SelectItem>
+                    <SelectItem value="in-progress">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                        In Progress
                       </div>
-                    </div>
-                    <Button
-                      onClick={submitWorkflow}
-                      disabled={submitting}
-                      className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 text-lg font-medium w-full sm:w-auto touch-manipulation"
-                    >
-                      {submitting ? (
-                        <>
-                          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3"></div>
-                          Submitting Updates...
-                        </>
-                      ) : (
-                        <>
-                          <CheckCircle className="w-5 h-5 mr-3" />
-                          Submit All Updates
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                </div>
+                    </SelectItem>
+                    <SelectItem value="completed">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                        Completed
+                      </div>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
-            )}
+
+              <div>
+                <Label className="text-sm font-medium text-gray-900 dark:text-white mb-2 block">Notes</Label>
+                <Textarea
+                  placeholder="Work notes..."
+                  value={workflowForm.notes}
+                  onChange={(e) => setWorkflowForm(prev => ({ ...prev, notes: e.target.value }))}
+                  rows={3}
+                  className="resize-none text-sm"
+                />
+              </div>
+            </div>
+
+            {/* Submit Button */}
+            <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
+              <div className="flex items-center gap-2">
+                <RealTimeIndicator className="text-xs" />
+                {submitSuccess && (
+                  <Badge className="bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400 text-xs">
+                    ✓ Submitted
+                  </Badge>
+                )}
+              </div>
+              <Button
+                onClick={submitWorkflow}
+                disabled={submitting || !workflowForm.selectedDrones.length || !workflowForm.selectedItems.length}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2"
+              >
+                {submitting ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Submitting...
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle className="w-4 h-4 mr-2" />
+                    Submit Updates
+                  </>
+                )}
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>
 
       {/* Compact Activity Timeline */}
-      <Card className="bg-white dark:bg-gray-800 shadow-lg border-0">
-        <CardHeader className="border-b border-gray-100 dark:border-gray-700 pb-4">
-          <CardTitle className="flex items-center gap-3 text-lg font-semibold text-gray-900 dark:text-white">
-            <div className="p-2 bg-gray-100 dark:bg-gray-700 rounded-lg">
-              <Clock className="h-4 w-4 text-gray-600 dark:text-gray-400" />
-            </div>
+      <Card className="bg-white dark:bg-gray-800 shadow-sm border border-gray-200 dark:border-gray-700">
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-base font-medium text-gray-900 dark:text-white">
+            <Clock className="h-4 w-4 text-gray-500" />
             Recent Activity
-            <Badge variant="outline" className="bg-gray-50 text-gray-700 dark:bg-gray-800 dark:text-gray-300 border-gray-200 dark:border-gray-600 text-xs">
-              Last {activities.length}
+            <Badge variant="outline" className="text-xs">
+              {activities.length}
             </Badge>
           </CardTitle>
         </CardHeader>
-        <CardContent className="pt-4">
-          <div className="space-y-3">
+        <CardContent className="pt-0">
+          <div className="space-y-2 max-h-48 overflow-y-auto">
             {activities.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
-                <Users className="h-8 w-8 text-gray-300 mx-auto mb-3" />
-                <p className="text-sm text-gray-500 dark:text-gray-400">No recent activity</p>
+              <div className="text-center py-6 text-gray-500">
+                <p className="text-sm">No recent activity</p>
               </div>
             ) : (
               activities.map((activity) => (
                 <div
                   key={activity.id}
-                  className="flex items-center gap-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-700/50 border-l-2 border-l-blue-500"
+                  className="flex items-center gap-3 p-2 rounded bg-gray-50 dark:bg-gray-700/50"
                 >
                   <div className="flex-shrink-0">
                     {getActivityIcon(activity.action)}
@@ -470,11 +418,11 @@ export default function BuildActivityPage() {
                       <span className="font-medium text-gray-900 dark:text-white">
                         {activity.droneSerial}
                       </span>
-                      <Badge className={`${getActivityBadgeColor(activity.action)} text-xs px-2 py-0.5`}>
+                      <Badge className={`${getActivityBadgeColor(activity.action)} text-xs px-1.5 py-0.5`}>
                         {activity.action}
                       </Badge>
                     </div>
-                    <p className="text-xs text-gray-600 dark:text-gray-300 mt-1">
+                    <p className="text-xs text-gray-600 dark:text-gray-300 truncate">
                       {activity.itemName} • {new Date(activity.timestamp).toLocaleString()}
                     </p>
                   </div>

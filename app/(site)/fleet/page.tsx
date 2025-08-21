@@ -88,14 +88,7 @@ export default function FleetPage() {
     }
   }
 
-  const getStatusBadgeVariant = (status: string) => {
-    switch (status) {
-      case 'completed': return 'default'
-      case 'in-progress': return 'default'
-      case 'pending': return 'outline'
-      default: return 'outline'
-    }
-  }
+
 
   const getProgressColor = (progress: number) => {
     if (progress >= 90) return 'text-green-600 dark:text-green-400'
@@ -114,25 +107,23 @@ export default function FleetPage() {
 
   return (
     <div className="space-y-6 sm:space-y-8">
-      {/* Executive Header - Tablet Optimized */}
-      <div className="bg-gradient-to-r from-gray-900 to-gray-800 dark:from-gray-800 dark:to-gray-900 -mx-4 sm:-mx-6 lg:-mx-8 -mt-4 sm:-mt-6 lg:-mt-8 px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 pb-4 sm:pb-6 rounded-t-lg mb-6 sm:mb-8">
-        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
-          <div>
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-2">Fleet Management</h1>
-            <p className="text-gray-300 text-base sm:text-lg">
-              Comprehensive oversight of drone manufacturing and assembly operations
-            </p>
+      {/* Consistent Functional Header - Assembly Workflow Aligned */}
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 pb-4 border-b border-gray-200 dark:border-gray-700">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">Fleet Management</h1>
+          <p className="text-gray-600 dark:text-gray-400 text-base sm:text-lg mt-1">
+            Comprehensive oversight of drone manufacturing and assembly operations
+          </p>
+        </div>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+          <div className="text-gray-600 dark:text-gray-400 text-sm">
+            <div className="text-lg font-semibold text-gray-900 dark:text-white">{filteredDrones.length}</div>
+            <div>Total Units</div>
           </div>
-          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center w-full lg:w-auto">
-            <div className="text-gray-300 text-sm text-left sm:text-right">
-              <div className="text-xl font-bold text-white">{filteredDrones.length}</div>
-              <div>Total Units</div>
-            </div>
-            <Button className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 text-base font-medium w-full sm:w-auto touch-manipulation">
-              <Plus className="w-5 h-5 mr-2" />
-              Initialize New Build
-            </Button>
-          </div>
+          <Button className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 text-base font-medium w-full sm:w-auto touch-manipulation">
+            <Plus className="w-5 h-5 mr-2" />
+            Initialize New Build
+          </Button>
         </div>
       </div>
 
@@ -198,11 +189,11 @@ export default function FleetPage() {
                   </p>
                 </div>
                 <Badge 
-                  variant={getStatusBadgeVariant(drone.status)}
+                  variant="outline"
                   className={`px-3 py-1 text-xs font-medium ${
-                    drone.status === 'completed' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' :
-                    drone.status === 'in-progress' ? 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300' :
-                    'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
+                    drone.status === 'completed' ? 'bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-300 border-green-200 dark:border-green-700' :
+                    drone.status === 'in-progress' ? 'bg-orange-50 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300 border-orange-200 dark:border-orange-700' :
+                    'bg-gray-50 text-gray-700 dark:bg-gray-700/30 dark:text-gray-300 border-gray-200 dark:border-gray-600'
                   }`}
                 >
                   {drone.status.replace('-', ' ').toUpperCase()}
@@ -245,8 +236,8 @@ export default function FleetPage() {
                   )) || []}
                 </div>
 
-                {/* Action Button - Touch Optimized */}
-                <div className="pt-2">
+                {/* Action Buttons - Touch Optimized with Workflow Integration */}
+                <div className="pt-2 flex flex-col gap-2">
                   <Button 
                     variant="outline" 
                     className="w-full bg-gradient-to-r from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-200 dark:from-blue-900/20 dark:to-blue-800/20 border-blue-200 dark:border-blue-700 text-blue-700 dark:text-blue-300 font-medium py-3 text-base touch-manipulation"
@@ -257,6 +248,17 @@ export default function FleetPage() {
                   >
                     View Detailed Analysis
                   </Button>
+                  {drone.status === 'in-progress' && (
+                    <Button 
+                      className="w-full bg-blue-600 hover:bg-blue-500 text-white py-2 text-sm touch-manipulation"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        window.location.href = `/build-activity?unit=${drone.serial}`
+                      }}
+                    >
+                      Update Assembly Progress
+                    </Button>
+                  )}
                 </div>
               </div>
             </CardContent>
