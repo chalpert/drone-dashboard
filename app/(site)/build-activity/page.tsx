@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Clock, CheckCircle, AlertCircle, Wrench, Users } from "lucide-react"
+import { Clock, CheckCircle, AlertCircle } from "lucide-react"
 import { BuildDrone, BuildActivity, ItemStatus } from "@/lib/types"
 import { RealTimeIndicator } from "@/components/real-time-provider"
 
