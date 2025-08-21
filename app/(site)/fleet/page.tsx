@@ -229,7 +229,8 @@ export default function FleetPage() {
                           />
                         </div>
                         <span className="text-xs font-semibold text-gray-600 dark:text-gray-400 w-8">
-                          {system.completionPercentage}%
+                          {/* BUG-002: Missing % symbol from blue status bars on drone cards */}
+                          {system.completionPercentage}
                         </span>
                       </div>
                     </div>
