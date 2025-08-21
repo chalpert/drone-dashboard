@@ -5,10 +5,51 @@ All notable changes to the Drone Dashboard project will be documented in this fi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.0] - 2025-08-21
+
+**Author:** Augment Agent
+**Timestamp:** 2025-08-21T23:30:00Z
+**Commit:** Assembly Workflow Enhancement & Bug Testing Framework
+
+### 🔧 Assembly Workflow Enhancements
+
+#### Fixed
+- **Item Dropdown Display**: Resolved issue where item dropdowns showed cryptic IDs instead of readable names
+- **Duplicate Items**: Fixed item dropdown showing duplicate entries across multiple drones
+- **SelectValue Component**: Enhanced custom Select component to support custom display content
+- **Database Hooks**: Cleaned up problematic duplicate functions causing build errors
+
+#### Enhanced
+- **Build Activity Page**: Streamlined design with compact, professional layout optimized for assembly teams
+- **Item Selection UX**: Improved dropdown workflow with proper name display and unique item filtering
+- **Component Architecture**: Enhanced SelectValue component flexibility for custom display content
+- **Code Quality**: Removed unused imports and functions, improved TypeScript consistency
+
+#### Added
+- **Testing Framework**: Implemented labeled bug system for systematic testing and QA
+- **BUG-001**: Submit button hanging animation with page crash on reload (for testing purposes)
+- **BUG-002**: Missing % symbols from blue status bars on fleet page (for testing purposes)
+- **Documentation**: Added comprehensive testing guide and bug identification system
+
+### 🧪 Testing & Quality Assurance
+
+#### Bug Testing Framework
+- **Labeled Bugs**: Systematic approach to testing with clearly identified bugs
+- **BUG-001**: Submit Update button hangs in loading animation, page crashes on reload
+- **BUG-002**: Blue status bars missing % symbols on drone cards
+- **Verification System**: Updates still process correctly despite UI bugs
+- **QA Process**: Structured testing methodology for assembly workflow validation
+
+#### Code Quality Improvements
+- **Build Validation**: Ensured clean production builds with proper error handling
+- **TypeScript Safety**: Maintained type safety throughout component enhancements
+- **Component Consistency**: Unified Select component behavior across the application
+- **Performance**: Optimized item filtering and dropdown rendering
+
 ## [2.1.0] - 2025-08-21
 
-**Author:** AMP (Amp AI Coding Agent)  
-**Timestamp:** 2025-08-21T15:30:00Z  
+**Author:** AMP (Amp AI Coding Agent)
+**Timestamp:** 2025-08-21T15:30:00Z
 **Commit:** UI Consistency Review & Assembly Workflow Integration
 
 ### 🎨 UI Consistency & Assembly Workflow Integration
