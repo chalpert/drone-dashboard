@@ -4,8 +4,11 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
+    "dev:all": "concurrently \"npm run dev\" \"npm run ws:dev\"",
+    "ws:dev": "ts-node lib/websocket-server.ts",
+    "ws:start": "node dist/websocket-server.js",
+    "build": "next build && tsc lib/websocket-server.ts --outDir dist",
+    "start": "concurrently \"next start\" \"npm run ws:start\"",
     "lint": "next lint"
   },
   "prisma": {
@@ -15,14 +18,19 @@
     "@prisma/client": "^6.14.0",
     "@radix-ui/react-progress": "^1.1.7",
     "@radix-ui/react-slot": "^1.2.3",
+    "@types/ws": "^8.18.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "concurrently": "^9.2.0",
     "lucide-react": "^0.540.0",
     "next": "15.2.4",
     "prisma": "^6.14.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "tailwind-merge": "^3.3.1"
+    "socket.io": "^4.8.1",
+    "socket.io-client": "^4.8.1",
+    "tailwind-merge": "^3.3.1",
+    "ws": "^8.18.3"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

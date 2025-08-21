@@ -3,14 +3,14 @@ import { prisma } from '@/lib/prisma'
 
 export async function PATCH(
   request: Request,
-  { params }: { params: { serial: string } }
+  { params }: { params: Promise<{ serial: string }> }
 ) {
-  const { serial } = params;
+  const { serial } = await params;
   try {
-  const { componentId, status } = await request.json()
+  const { itemId, status } = await request.json()
 
-    if (!componentId || !status) {
-      return NextResponse.json({ error: 'Component ID and status are required' }, { status: 400 })
+    if (!itemId || !status) {
+      return NextResponse.json({ error: 'Item ID and status are required' }, { status: 400 })
     }
 
     if (!['pending', 'in-progress', 'completed'].includes(status)) {
@@ -21,12 +21,17 @@ export async function PATCH(
     const drone = await prisma.drone.findUnique({
       where: { serial },
       include: {
-        categories: {
+        systems: {
           include: {
-            categoryDefinition: true,
-            components: {
+            systemDefinition: true,
+            assemblies: {
               include: {
-                componentDefinition: true
+                assemblyDefinition: true,
+                items: {
+                  include: {
+                    itemDefinition: true
+                  }
+                }
               }
             }
           }
@@ -38,15 +43,20 @@ export async function PATCH(
       return NextResponse.json({ error: 'Drone not found' }, { status: 404 })
     }
 
-    // Update component status
-    const updatedComponent = await prisma.droneComponent.update({
-      where: { id: componentId },
+    // Update item status
+    const updatedItem = await prisma.droneItem.update({
+      where: { id: itemId },
       data: { status },
       include: {
-        componentDefinition: true,
-        droneCategory: {
+        itemDefinition: true,
+        droneAssembly: {
           include: {
-            categoryDefinition: true
+            assemblyDefinition: true,
+            droneSystem: {
+              include: {
+                systemDefinition: true
+              }
+            }
           }
         }
       }
@@ -56,72 +66,92 @@ export async function PATCH(
     await prisma.buildActivity.create({
       data: {
         droneId: drone.id,
-        componentName: updatedComponent.componentDefinition.name,
+        itemName: updatedItem.itemDefinition.name,
+        assemblyName: updatedItem.droneAssembly.assemblyDefinition.name,
+        systemName: updatedItem.droneAssembly.droneSystem.systemDefinition.name,
         action: status === 'completed' ? 'completed' : status === 'in-progress' ? 'started' : 'updated',
         status: status,
       }
     })
 
-    // Recalculate category completion
-    const category = await prisma.droneCategory.findUnique({
-      where: { id: updatedComponent.droneCategoryId },
+    // Recalculate assembly completion
+    const assembly = await prisma.droneAssembly.findUnique({
+      where: { id: updatedItem.droneAssemblyId },
       include: {
-        components: {
+        items: {
           include: {
-            componentDefinition: true
+            itemDefinition: true
+          }
+        },
+        assemblyDefinition: true,
+        droneSystem: {
+          include: {
+            systemDefinition: true
           }
         }
       }
     })
 
-    if (category) {
-      let categoryCompletedWeight = 0
-      let categoryTotalWeight = 0
+    if (assembly) {
+      let assemblyCompletedWeight = 0
+      let assemblyTotalWeight = 0
 
-      for (const component of category.components) {
-        categoryTotalWeight += component.componentDefinition.weight
-        if (component.status === 'completed') {
-          categoryCompletedWeight += component.componentDefinition.weight
+      for (const item of assembly.items) {
+        assemblyTotalWeight += item.itemDefinition.weight
+        if (item.status === 'completed') {
+          assemblyCompletedWeight += item.itemDefinition.weight
+        } else if (item.status === 'in-progress') {
+          assemblyCompletedWeight += item.itemDefinition.weight * 0.5 // 50% credit for in-progress
         }
       }
 
-      const categoryCompletion = categoryTotalWeight > 0 ? (categoryCompletedWeight / categoryTotalWeight) * 100 : 0
+      const assemblyCompletion = assemblyTotalWeight > 0 ? (assemblyCompletedWeight / assemblyTotalWeight) * 100 : 0
 
-      await prisma.droneCategory.update({
-        where: { id: category.id },
-        data: { completionPercentage: categoryCompletion }
+      await prisma.droneAssembly.update({
+        where: { id: assembly.id },
+        data: { completionPercentage: assemblyCompletion }
       })
 
-      // Recalculate drone overall completion based on individual component weights
-      const allCategories = await prisma.droneCategory.findMany({
+      // Recalculate system completion
+      const allAssemblies = await prisma.droneAssembly.findMany({
+        where: { droneSystemId: assembly.droneSystemId },
+        include: {
+          assemblyDefinition: true
+        }
+      })
+
+      let systemCompletedWeight = 0
+      let systemTotalWeight = 0
+
+      for (const asm of allAssemblies) {
+        systemTotalWeight += asm.assemblyDefinition.weight
+        systemCompletedWeight += (asm.assemblyDefinition.weight * asm.completionPercentage / 100)
+      }
+
+      const systemCompletion = systemTotalWeight > 0 ? (systemCompletedWeight / systemTotalWeight) * 100 : 0
+
+      await prisma.droneSystem.update({
+        where: { id: assembly.droneSystemId },
+        data: { completionPercentage: systemCompletion }
+      })
+
+      // Recalculate drone overall completion
+      const allSystems = await prisma.droneSystem.findMany({
         where: { droneId: drone.id },
         include: {
-          categoryDefinition: true,
-          components: {
-            include: {
-              componentDefinition: true
-            }
-          }
+          systemDefinition: true
         }
       })
 
       let totalCompletedWeight = 0
       
-      // Sum up completed component weights across all categories
-      for (const cat of allCategories) {
-        for (const component of cat.components) {
-          if (component.status === 'completed') {
-            // Calculate the component's contribution to overall completion
-            // (category weight * component weight within category) / 100
-            const componentOverallWeight = (cat.categoryDefinition.weight * component.componentDefinition.weight) / 100
-            totalCompletedWeight += componentOverallWeight
-          }
-        }
+      for (const system of allSystems) {
+        totalCompletedWeight += (system.systemDefinition.weight * system.completionPercentage / 100)
       }
 
       // Update drone overall completion and status
       let droneStatus = drone.status
-      if (totalCompletedWeight === 100) {
+      if (totalCompletedWeight >= 99.9) { // Close to 100% due to rounding
         droneStatus = 'completed'
       } else if (totalCompletedWeight > 0) {
         droneStatus = 'in-progress'

@@ -3,30 +3,28 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { mockBuildDrones, mockBuildActivity } from "@/lib/mockBuildData"
-import { BuildDrone, BuildActivity } from "@/lib/types"
 
 export default function Dashboard() {
   const totalDrones = mockBuildDrones.length
-  const dronesInBuild = mockBuildDrones.filter(drone => drone.status === 'in-build').length
-  const dronesCompleted = mockBuildDrones.filter(drone => drone.status === 'completed').length
-  const dronesTesting = mockBuildDrones.filter(drone => drone.status === 'testing').length
+  const dronesInBuild = mockBuildDrones.filter(drone => drone.status === 'in-progress').length
+  const dronesTesting = mockBuildDrones.filter(drone => drone.overallCompletion === 100).length
   
   // Calculate average build progress
   const averageProgress = Math.round(
     mockBuildDrones.reduce((sum, drone) => sum + drone.overallCompletion, 0) / mockBuildDrones.length
   )
   
-  // Find category bottlenecks (lowest average completion rates)
-  const categoryStats = mockBuildDrones[0].categories.map(category => {
-    const categoryName = category.name
+  // Find system bottlenecks (lowest average completion rates)
+  const systemStats = mockBuildDrones[0]?.systems?.map(system => {
+    const systemName = system.name
     const avgCompletion = Math.round(
       mockBuildDrones.reduce((sum, drone) => {
-        const droneCategory = drone.categories.find(cat => cat.name === categoryName)
-        return sum + (droneCategory?.completionPercentage || 0)
+        const droneSystem = drone.systems?.find(sys => sys.name === systemName)
+        return sum + (droneSystem?.completionPercentage || 0)
       }, 0) / mockBuildDrones.length
     )
-    return { name: categoryName, avgCompletion, weight: category.weight }
-  }).sort((a, b) => a.avgCompletion - b.avgCompletion)
+    return { name: systemName, avgCompletion, weight: system.weight }
+  }).sort((a, b) => a.avgCompletion - b.avgCompletion) || []
 
   return (
     <div className="space-y-6">
@@ -161,11 +159,11 @@ export default function Dashboard() {
                     }`}
                   ></div>
                   <div className="flex-1">
-                    <div className="text-sm text-gray-900 dark:text-white">
-                      {activity.droneSerial}: {activity.component} {activity.action}
+                  <div className="text-sm text-gray-900 dark:text-white">
+                      {activity.droneSerial}: {activity.itemName} {activity.action}
                     </div>
                     <div className="text-xs text-gray-500 dark:text-gray-400">
-                      {activity.category} • {new Date(activity.timestamp).toLocaleString()}
+                      {activity.assemblyName} • {activity.systemName} • {new Date(activity.timestamp).toLocaleString()}
                     </div>
                     {activity.notes && (
                       <div className="text-xs text-gray-600 dark:text-gray-300 mt-1">
@@ -180,36 +178,36 @@ export default function Dashboard() {
         </Card>
       </div>
 
-      {/* Category Performance Analysis */}
+      {/* System Performance Analysis */}
       <Card>
         <CardHeader>
           <CardTitle className="text-lg font-semibold text-gray-900 dark:text-white">
-            Category Performance Analysis
+            System Performance Analysis
           </CardTitle>
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            Average completion rates across component categories
+            Average completion rates across drone systems
           </p>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {categoryStats.map((category) => (
-              <div key={category.name} className="space-y-2">
+            {systemStats.map((system) => (
+              <div key={system.name} className="space-y-2">
                 <div className="flex justify-between items-center">
                   <div>
                     <div className="text-sm font-medium text-gray-900 dark:text-white">
-                      {category.name}
+                      {system.name}
                     </div>
                     <div className="text-xs text-gray-500 dark:text-gray-400">
-                      {category.weight}% of total build weight
+                      {system.weight}% of total build weight
                     </div>
                   </div>
                   <div className="text-right">
                     <div className={`text-sm font-bold ${
-                      category.avgCompletion >= 70 ? 'text-green-600 dark:text-green-400' :
-                      category.avgCompletion >= 40 ? 'text-orange-600 dark:text-orange-400' :
+                      system.avgCompletion >= 70 ? 'text-green-600 dark:text-green-400' :
+                      system.avgCompletion >= 40 ? 'text-orange-600 dark:text-orange-400' :
                       'text-red-600 dark:text-red-400'
                     }`}>
-                      {category.avgCompletion}%
+                      {system.avgCompletion}%
                     </div>
                     <div className="text-xs text-gray-500 dark:text-gray-400">
                       avg completion
@@ -217,7 +215,7 @@ export default function Dashboard() {
                   </div>
                 </div>
                 <Progress 
-                  value={category.avgCompletion} 
+                  value={system.avgCompletion} 
                   className="h-2"
                 />
               </div>

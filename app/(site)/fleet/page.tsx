@@ -11,7 +11,7 @@ import { BuildDrone } from "@/lib/types"
 export default function FleetPage() {
   const [selectedStatus, setSelectedStatus] = useState("all")
   const [selectedDrone, setSelectedDrone] = useState<BuildDrone | null>(null)
-  const [expandedCategories, setExpandedCategories] = useState<string[]>([])
+  const [expandedSystems, setExpandedSystems] = useState<string[]>([])
   const [drones, setDrones] = useState<BuildDrone[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -35,11 +35,11 @@ export default function FleetPage() {
     }
   }
 
-  const toggleCategory = (categoryId: string) => {
-    setExpandedCategories(prev => 
-      prev.includes(categoryId) 
-        ? prev.filter(id => id !== categoryId)
-        : [...prev, categoryId]
+  const toggleSystem = (systemId: string) => {
+    setExpandedSystems(prev => 
+      prev.includes(systemId) 
+        ? prev.filter(id => id !== systemId)
+        : [...prev, systemId]
     )
   }
 
@@ -177,19 +177,19 @@ export default function FleetPage() {
                   <Progress value={drone.overallCompletion} className="h-3" />
                 </div>
 
-                {/* Category Progress */}
+                {/* System Progress */}
                 <div className="space-y-2">
-                  {drone.categories.map((category) => (
-                    <div key={category.id} className="flex items-center justify-between text-xs">
-                      <span className="text-gray-600 dark:text-gray-400">{category.name}</span>
+                  {drone.systems?.map((system) => (
+                    <div key={system.id} className="flex items-center justify-between text-xs">
+                      <span className="text-gray-600 dark:text-gray-400">{system.name}</span>
                       <div className="w-16 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full">
                         <div 
                           className="h-full bg-blue-500 rounded-full transition-all duration-300" 
-                          style={{ width: `${category.completionPercentage}%` }}
+                          style={{ width: `${system.completionPercentage}%` }}
                         />
                       </div>
                     </div>
-                  ))}
+                  )) || []}
                 </div>
 
                 {/* Action Button */}
@@ -266,70 +266,71 @@ export default function FleetPage() {
                 </div>
               </div>
 
-              {/* Category Breakdown */}
+              {/* System Breakdown */}
               <div className="space-y-3">
-                {selectedDrone.categories.map((category) => (
-                  <div key={category.id} className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+                {selectedDrone.systems?.map((system) => (
+                  <div key={system.id} className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
                     <div 
                       className="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800" 
-                      onClick={() => toggleCategory(category.id)}
+                      onClick={() => toggleSystem(system.id)}
                     >
                       <div className="flex items-center gap-4">
-                        <h4 className="font-medium text-gray-900 dark:text-white">{category.name}</h4>
-                        <span className="text-sm text-gray-500">({category.weight}% of total)</span>
+                        <h4 className="font-medium text-gray-900 dark:text-white">{system.name}</h4>
+                        <span className="text-sm text-gray-500">({system.weight}% of total)</span>
                       </div>
                       <div className="flex items-center gap-4">
                         <div className="w-32 h-2 bg-gray-200 dark:bg-gray-700 rounded-full">
                           <div 
                             className="h-full bg-blue-500 rounded-full transition-all duration-300" 
-                            style={{ width: `${category.completionPercentage}%` }}
+                            style={{ width: `${system.completionPercentage}%` }}
                           />
                         </div>
                         <Button variant="ghost" size="sm">
-                          {expandedCategories.includes(category.id) ? <Minus className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+                          {expandedSystems.includes(system.id) ? <Minus className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
                         </Button>
                       </div>
                     </div>
-                    {expandedCategories.includes(category.id) && (
+                    {expandedSystems.includes(system.id) && (
                       <div className="px-4 pb-4 border-t border-gray-100 dark:border-gray-700">
-                        <div className="space-y-2 pt-3">
-                          {category.components.map((component) => {
-                            // Calculate the weighted total for this component (category weight * component weight / 100)
-                            const weightedTotal = (category.weight * component.weight / 100).toFixed(1);
-                            return (
-                              <div key={component.id} className="flex items-center justify-between text-sm py-1">
-                                <div className="flex items-center gap-2 flex-1">
-                                  <span className={`flex items-center gap-2 ${
-                                    component.status === 'completed' ? 'text-green-600 dark:text-green-400' :
-                                    component.status === 'in-progress' ? 'text-orange-600 dark:text-orange-400' :
-                                    'text-gray-500 dark:text-gray-400'
-                                  }`}>
-                                    <span className="w-4 text-center">
-                                      {component.status === 'completed' ? '✓' : 
-                                       component.status === 'in-progress' ? '◐' : '○'}
-                                    </span>
-                                    {component.name}
-                                  </span>
-                                  <span className="text-xs text-gray-400 ml-2">
-                                    ({weightedTotal}%)
-                                  </span>
-                                </div>
-                                <span className={`text-xs px-2 py-1 rounded ${
-                                  component.status === 'completed' ? 'bg-green-100 text-green-800' :
-                                  component.status === 'in-progress' ? 'bg-orange-100 text-orange-800' :
-                                  'bg-gray-100 text-gray-600'
-                                }`}>
-                                  {component.status === 'completed' ? 'Complete' :
-                                   component.status === 'in-progress' ? 'In Progress' : 'Pending'}
-                                </span>
+                        <div className="space-y-3 pt-3">
+                          {system.assemblies?.map((assembly) => (
+                            <div key={assembly.id} className="border border-gray-100 dark:border-gray-600 rounded p-3">
+                              <div className="flex items-center justify-between mb-2">
+                                <h5 className="text-sm font-medium text-gray-800 dark:text-gray-200">{assembly.name}</h5>
+                                <span className="text-xs text-gray-500">{assembly.completionPercentage}%</span>
                               </div>
-                            )
-                          })}
+                              <div className="space-y-1">
+                                {assembly.items?.map((item) => (
+                                  <div key={item.id} className="flex items-center justify-between text-xs py-1">
+                                    <div className="flex items-center gap-2">
+                                      <span className={`w-3 text-center ${
+                                        item.status === 'completed' ? 'text-green-600' :
+                                        item.status === 'in-progress' ? 'text-orange-600' :
+                                        'text-gray-400'
+                                      }`}>
+                                        {item.status === 'completed' ? '✓' : 
+                                         item.status === 'in-progress' ? '◐' : '○'}
+                                      </span>
+                                      <span className="text-gray-700 dark:text-gray-300">{item.name}</span>
+                                    </div>
+                                    <span className={`px-1 py-0.5 rounded text-xs ${
+                                      item.status === 'completed' ? 'bg-green-100 text-green-700' :
+                                      item.status === 'in-progress' ? 'bg-orange-100 text-orange-700' :
+                                      'bg-gray-100 text-gray-600'
+                                    }`}>
+                                      {item.status === 'completed' ? 'Done' :
+                                       item.status === 'in-progress' ? 'WIP' : 'Todo'}
+                                    </span>
+                                  </div>
+                                )) || []}
+                              </div>
+                            </div>
+                          )) || []}
                         </div>
                       </div>
                     )}
                   </div>
-                ))}
+                )) || []}
               </div>
 
               <div className="flex justify-end pt-4 border-t border-gray-200 dark:border-gray-700">

@@ -5,6 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
+import { NotificationCenter, ConnectionStatus } from "@/components/notifications"
+import { RealTimeIndicator } from "@/components/real-time-provider"
 import {
   Server,
   Database,
@@ -18,8 +20,22 @@ import {
   Settings,
 } from "lucide-react"
 
+interface System {
+  id: string
+  name: string
+  type: string
+  status: string
+  health: number
+  cpu: number
+  memory: number
+  storage: number
+  uptime: string
+  location: string
+  lastMaintenance: string
+}
+
 export default function SystemsPage() {
-  const [selectedSystem, setSelectedSystem] = useState(null)
+  const [selectedSystem, setSelectedSystem] = useState<System | null>(null)
 
   const systems = [
     {
@@ -102,7 +118,7 @@ export default function SystemsPage() {
     },
   ]
 
-  const getStatusColor = (status) => {
+  const getStatusColor = (status: string) => {
     switch (status) {
       case "online":
         return "bg-white/20 text-white"
@@ -117,7 +133,7 @@ export default function SystemsPage() {
     }
   }
 
-  const getStatusIcon = (status) => {
+  const getStatusIcon = (status: string) => {
     switch (status) {
       case "online":
         return <CheckCircle className="w-4 h-4" />
@@ -132,7 +148,7 @@ export default function SystemsPage() {
     }
   }
 
-  const getSystemIcon = (type) => {
+  const getSystemIcon = (type: string) => {
     switch (type) {
       case "Primary Server":
         return <Server className="w-6 h-6" />
@@ -151,7 +167,7 @@ export default function SystemsPage() {
     }
   }
 
-  const getHealthColor = (health) => {
+  const getHealthColor = (health: number) => {
     if (health >= 95) return "text-white"
     if (health >= 85) return "text-white"
     if (health >= 70) return "text-orange-500"
@@ -163,10 +179,15 @@ export default function SystemsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white tracking-wider">SYSTEMS MONITOR</h1>
+          <div className="flex items-center gap-4 mb-2">
+            <h1 className="text-2xl font-bold text-white tracking-wider">SYSTEMS MONITOR</h1>
+            <RealTimeIndicator className="ml-2" />
+          </div>
           <p className="text-sm text-neutral-400">Infrastructure health and performance monitoring</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex items-center gap-3">
+          <ConnectionStatus />
+          <NotificationCenter />
           <Button className="bg-orange-500 hover:bg-orange-600 text-white">System Scan</Button>
           <Button className="bg-orange-500 hover:bg-orange-600 text-white">Maintenance Mode</Button>
         </div>

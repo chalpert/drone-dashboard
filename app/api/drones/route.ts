@@ -5,12 +5,17 @@ export async function GET() {
   try {
     const drones = await prisma.drone.findMany({
       include: {
-        categories: {
+        systems: {
           include: {
-            categoryDefinition: true,
-            components: {
+            systemDefinition: true,
+            assemblies: {
               include: {
-                componentDefinition: true
+                assemblyDefinition: true,
+                items: {
+                  include: {
+                    itemDefinition: true
+                  }
+                }
               }
             }
           }
@@ -35,16 +40,22 @@ export async function GET() {
       overallCompletion: Math.round(drone.overallCompletion * 10) / 10, // Round to 1 decimal place
       startDate: drone.startDate?.toISOString(),
       estimatedCompletion: drone.estimatedCompletion?.toISOString(),
-      categories: drone.categories.map(category => ({
-        id: category.id,
-        name: category.categoryDefinition.name,
-        weight: category.categoryDefinition.weight,
-        completionPercentage: category.completionPercentage,
-        components: category.components.map(component => ({
-          id: component.id,
-          name: component.componentDefinition.name,
-          status: component.status,
-          weight: component.componentDefinition.weight
+      systems: drone.systems.map(system => ({
+        id: system.id,
+        name: system.systemDefinition.name,
+        weight: system.systemDefinition.weight,
+        completionPercentage: system.completionPercentage,
+        assemblies: system.assemblies.map(assembly => ({
+          id: assembly.id,
+          name: assembly.assemblyDefinition.name,
+          weight: assembly.assemblyDefinition.weight,
+          completionPercentage: assembly.completionPercentage,
+          items: assembly.items.map(item => ({
+            id: item.id,
+            name: item.itemDefinition.name,
+            status: item.status,
+            weight: item.itemDefinition.weight
+          }))
         }))
       }))
     }))
@@ -83,32 +94,47 @@ export async function POST(request: Request) {
       }
     })
 
-    // Get all category definitions
-    const categoryDefinitions = await prisma.categoryDefinition.findMany({
+    // Get all system definitions with their assemblies and items
+    const systemDefinitions = await prisma.systemDefinition.findMany({
       include: {
-        components: true
+        assemblies: {
+          include: {
+            items: true
+          }
+        }
       }
     })
 
-    // Create drone categories and components
-    for (const categoryDef of categoryDefinitions) {
-      const droneCategory = await prisma.droneCategory.create({
+    // Create drone systems, assemblies, and items
+    for (const systemDef of systemDefinitions) {
+      const droneSystem = await prisma.droneSystem.create({
         data: {
           droneId: drone.id,
-          categoryDefinitionId: categoryDef.id,
+          systemDefinitionId: systemDef.id,
           completionPercentage: 0,
         }
       })
 
-      // Create components for this category
-      for (const componentDef of categoryDef.components) {
-        await prisma.droneComponent.create({
+      // Create assemblies for this system
+      for (const assemblyDef of systemDef.assemblies) {
+        const droneAssembly = await prisma.droneAssembly.create({
           data: {
-            droneCategoryId: droneCategory.id,
-            componentDefinitionId: componentDef.id,
-            status: 'pending',
+            droneSystemId: droneSystem.id,
+            assemblyDefinitionId: assemblyDef.id,
+            completionPercentage: 0,
           }
         })
+
+        // Create items for this assembly
+        for (const itemDef of assemblyDef.items) {
+          await prisma.droneItem.create({
+            data: {
+              droneAssemblyId: droneAssembly.id,
+              itemDefinitionId: itemDef.id,
+              status: 'pending',
+            }
+          })
+        }
       }
     }
 

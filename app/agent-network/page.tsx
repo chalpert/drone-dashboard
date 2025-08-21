@@ -8,7 +8,15 @@ import { Search, Filter, MoreHorizontal, MapPin, Clock, Shield } from "lucide-re
 
 export default function AgentNetworkPage() {
   const [searchTerm, setSearchTerm] = useState("")
-  const [selectedAgent, setSelectedAgent] = useState(null)
+  const [selectedAgent, setSelectedAgent] = useState<{
+    id: string;
+    name: string;
+    status: string;
+    location: string;
+    lastSeen: string;
+    missions: number;
+    risk: string;
+  } | null>(null)
 
   const agents = [
     {

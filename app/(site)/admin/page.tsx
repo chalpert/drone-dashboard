@@ -2,12 +2,9 @@
 
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { BuildDrone, ComponentStatus } from "@/lib/types"
+import { BuildDrone, ItemStatus } from "@/lib/types"
 
 export default function AdminPage() {
   const [drones, setDrones] = useState<BuildDrone[]>([])
@@ -35,9 +32,9 @@ export default function AdminPage() {
     }
   }
 
-  const updateComponentStatus = async (componentId: string, status: ComponentStatus, droneSerial: string) => {
-    console.log('Updating component:', componentId, 'to status:', status)
-    setUpdating(componentId)
+  const updateItemStatus = async (itemId: string, status: ItemStatus, droneSerial: string) => {
+    console.log('Updating item:', itemId, 'to status:', status)
+    setUpdating(itemId)
     
     try {
       const response = await fetch(`/api/drones/${droneSerial}/components`, {
@@ -45,7 +42,7 @@ export default function AdminPage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ componentId, status }),
+        body: JSON.stringify({ itemId, status }),
       })
 
       if (response.ok) {
@@ -66,16 +63,16 @@ export default function AdminPage() {
           }
         }
       } else {
-        console.error('Failed to update component status')
+        console.error('Failed to update item status')
       }
     } catch (error) {
-      console.error('Error updating component:', error)
+      console.error('Error updating item:', error)
     } finally {
       setUpdating(null)
     }
   }
 
-  const getStatusColor = (status: ComponentStatus) => {
+  const getStatusColor = (status: ItemStatus) => {
     switch (status) {
       case 'completed':
         return 'bg-green-500 text-white'
@@ -103,7 +100,7 @@ export default function AdminPage() {
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Admin Dashboard</h1>
           <p className="text-gray-500 dark:text-gray-400">
-            Manage drone build progress and update component statuses
+            Manage drone build progress and update item statuses
           </p>
         </div>
       </div>
@@ -150,66 +147,78 @@ export default function AdminPage() {
           </CardContent>
         </Card>
 
-        {/* Component Management */}
+        {/* Item Management */}
         {selectedDrone && (
           <Card>
             <CardHeader>
               <CardTitle>
-                Manage Components - Serial: {selectedDrone.serial}
+                Manage Items - Serial: {selectedDrone.serial}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-6">
-                {selectedDrone.categories.map((category) => (
-                  <div key={category.id} className="space-y-3">
+                {selectedDrone.systems?.map((system) => (
+                  <div key={system.id} className="space-y-4">
                     <div className="flex items-center justify-between">
                       <h4 className="font-medium text-gray-900 dark:text-white">
-                        {category.name}
+                        {system.name}
                       </h4>
                       <span className="text-sm text-gray-500">
-                        {category.completionPercentage.toFixed(1)}% Complete
+                        {system.completionPercentage.toFixed(1)}% Complete
                       </span>
                     </div>
-                    <div className="space-y-2">
-                      {category.components.map((component) => (
-                        <div
-                          key={component.id}
-                          className="flex items-center justify-between p-3 border rounded-lg"
-                        >
-                          <div className="flex-1">
-                            <span className="text-sm font-medium text-gray-900 dark:text-white">
-                              {component.name}
-                            </span>
-                            <span className="text-xs text-gray-500 ml-2">
-                              ({((category.weight * component.weight) / 100).toFixed(1)}% of total)
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Select
-                              value={component.status}
-                              onValueChange={(value: ComponentStatus) =>
-                                updateComponentStatus(component.id, value, selectedDrone.serial)
-                              }
-                              disabled={updating === component.id}
-                            >
-                              <SelectTrigger className="w-32">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="pending">Pending</SelectItem>
-                                <SelectItem value="in-progress">In Progress</SelectItem>
-                                <SelectItem value="completed">Completed</SelectItem>
-                              </SelectContent>
-                            </Select>
-                            {updating === component.id && (
-                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-                            )}
-                          </div>
+                    {system.assemblies?.map((assembly) => (
+                      <div key={assembly.id} className="ml-4 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <h5 className="text-sm font-medium text-gray-800 dark:text-gray-200">
+                            {assembly.name}
+                          </h5>
+                          <span className="text-xs text-gray-500">
+                            {assembly.completionPercentage.toFixed(1)}% Complete
+                          </span>
                         </div>
-                      ))}
-                    </div>
+                        <div className="space-y-1">
+                          {assembly.items?.map((item) => (
+                            <div
+                              key={item.id}
+                              className="flex items-center justify-between p-3 border rounded-lg ml-4"
+                            >
+                              <div className="flex-1">
+                                <span className="text-sm font-medium text-gray-900 dark:text-white">
+                                  {item.name}
+                                </span>
+                                <span className="text-xs text-gray-500 ml-2">
+                                  ({item.weight}% of {assembly.name})
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Select
+                                  value={item.status}
+                                onValueChange={(value: string) =>
+                                  updateItemStatus(item.id, value as ItemStatus, selectedDrone.serial)
+                                }
+                                  disabled={updating === item.id}
+                                >
+                                  <SelectTrigger className="w-32">
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="pending">Pending</SelectItem>
+                                    <SelectItem value="in-progress">In Progress</SelectItem>
+                                    <SelectItem value="completed">Completed</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                                {updating === item.id && (
+                                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                                )}
+                              </div>
+                            </div>
+                          )) || []}
+                        </div>
+                      </div>
+                    )) || []}
                   </div>
-                ))}
+                )) || []}
               </div>
             </CardContent>
           </Card>

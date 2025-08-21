@@ -1,5 +1,3 @@
-"use client"
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -7,11 +5,12 @@ import { Progress } from "@/components/ui/progress"
 import { ArrowLeft, Calendar, Settings, CheckCircle, Clock, Circle } from "lucide-react"
 import Link from "next/link"
 import { mockBuildDrones, mockBuildActivity } from "@/lib/mockBuildData"
-import { BuildDrone, Component } from "@/lib/types"
+import { ItemStatus } from "@/lib/types"
 
-export default function DroneDetailPage({ params }: { params: { serial: string } }) {
+export default async function DroneDetailPage({ params }: { params: Promise<{ serial: string }> }) {
+  const { serial } = await params
   // Find the drone by serial number
-  const drone = mockBuildDrones.find(d => d.serial === params.serial)
+  const drone = mockBuildDrones.find(d => d.serial === serial)
   
   if (!drone) {
     return (
@@ -19,7 +18,7 @@ export default function DroneDetailPage({ params }: { params: { serial: string }
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Drone Not Found</h1>
           <p className="text-gray-500 dark:text-gray-400 mb-4">
-            Serial "{params.serial}" does not exist in the system.
+            Serial &quot;{serial}&quot; does not exist in the system.
           </p>
           <Link href="/fleet">
             <Button>
@@ -45,15 +44,6 @@ export default function DroneDetailPage({ params }: { params: { serial: string }
     }
   }
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'completed': return 'text-green-600 dark:text-green-400'
-      case 'testing': return 'text-blue-600 dark:text-blue-400'
-      case 'in-build': return 'text-orange-600 dark:text-orange-400'
-      case 'planning': return 'text-gray-600 dark:text-gray-400'
-      default: return 'text-gray-600 dark:text-gray-400'
-    }
-  }
 
   const getProgressColor = (progress: number) => {
     if (progress >= 90) return 'text-green-600 dark:text-green-400'
@@ -62,7 +52,7 @@ export default function DroneDetailPage({ params }: { params: { serial: string }
     return 'text-gray-600 dark:text-gray-400'
   }
 
-  const getComponentIcon = (status: Component['status']) => {
+  const getItemIcon = (status: ItemStatus) => {
     switch (status) {
       case 'completed': return <CheckCircle className="w-4 h-4 text-green-500" />
       case 'in-progress': return <Clock className="w-4 h-4 text-orange-500" />
@@ -147,57 +137,68 @@ export default function DroneDetailPage({ params }: { params: { serial: string }
         </CardContent>
       </Card>
 
-      {/* Component Categories */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {drone.categories.map((category) => (
-          <Card key={category.id}>
+      {/* Systems */}
+      <div className="space-y-6">
+        {drone.systems?.map((system) => (
+          <Card key={system.id}>
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="text-xl font-semibold text-gray-900 dark:text-white">
-                  {category.name}
+                  {system.name}
                 </CardTitle>
                 <div className="text-right">
-                  <div className={`text-lg font-bold ${getProgressColor(category.completionPercentage)}`}>
-                    {category.completionPercentage}%
+                  <div className={`text-lg font-bold ${getProgressColor(system.completionPercentage)}`}>
+                    {system.completionPercentage}%
                   </div>
                   <div className="text-xs text-gray-500 dark:text-gray-400">
-                    {category.weight}% of total build
+                    {system.weight}% of total build
                   </div>
                 </div>
               </div>
             </CardHeader>
             <CardContent>
-              <Progress value={category.completionPercentage} className="h-3 mb-6" />
+              <Progress value={system.completionPercentage} className="h-3 mb-6" />
               
-              {/* Individual Components */}
-              <div className="space-y-3">
-                <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">
-                  Components
-                </h4>
-                {category.components.map((component) => (
-                  <div key={component.id} className="flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-gray-800/50">
-                    <div className="flex items-center gap-3">
-                      {getComponentIcon(component.status)}
-                      <div>
-                        <div className="text-sm font-medium text-gray-900 dark:text-white">
-                          {component.name}
-                        </div>
-                        <div className="text-xs text-gray-500 dark:text-gray-400 capitalize">
-                          {component.status.replace('-', ' ')}
-                        </div>
-                      </div>
+              {/* Assemblies */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {system.assemblies?.map((assembly) => (
+                  <div key={assembly.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="text-sm font-medium text-gray-900 dark:text-white">
+                        {assembly.name}
+                      </h4>
+                      <span className="text-xs text-gray-500">
+                        {assembly.completionPercentage}%
+                      </span>
                     </div>
-                    <div className="text-right">
-                      <div className="text-xs text-gray-500 dark:text-gray-400">
-                        Weight: {Math.round(component.weight)}%
-                      </div>
+                    <Progress value={assembly.completionPercentage} className="h-2 mb-3" />
+                    
+                    {/* Items */}
+                    <div className="space-y-2">
+                      {assembly.items?.map((item) => (
+                        <div key={item.id} className="flex items-center justify-between text-xs">
+                          <div className="flex items-center gap-2">
+                            {getItemIcon(item.status)}
+                            <span className="text-gray-900 dark:text-white">
+                              {item.name}
+                            </span>
+                          </div>
+                          <span className={`px-2 py-1 rounded text-xs ${
+                            item.status === 'completed' ? 'bg-green-100 text-green-800' :
+                            item.status === 'in-progress' ? 'bg-orange-100 text-orange-800' :
+                            'bg-gray-100 text-gray-600'
+                          }`}>
+                            {item.status.replace('-', ' ')}
+                          </span>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 ))}
               </div>
             </CardContent>
           </Card>
-        ))}
+        )) || []}
       </div>
 
       {/* Build Activity Log */}
@@ -223,14 +224,14 @@ export default function DroneDetailPage({ params }: { params: { serial: string }
                   <div className="flex-1">
                     <div className="flex items-center justify-between mb-1">
                       <h4 className="text-sm font-medium text-gray-900 dark:text-white">
-                        {activity.component} - {activity.action}
+                        {activity.itemName} - {activity.action}
                       </h4>
                       <span className="text-xs text-gray-500 dark:text-gray-400">
                         {new Date(activity.timestamp).toLocaleString()}
                       </span>
                     </div>
                     <div className="text-sm text-gray-600 dark:text-gray-300 mb-1">
-                      Category: {activity.category}
+                      {activity.assemblyName} • {activity.systemName}
                     </div>
                     {activity.notes && (
                       <div className="text-sm text-gray-500 dark:text-gray-400 italic">

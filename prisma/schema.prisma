@@ -21,66 +21,95 @@ model Drone {
   createdAt             DateTime       @default(now())
   updatedAt             DateTime       @updatedAt
   
-  categories            DroneCategory[]
+  systems               DroneSystem[]
   buildActivities       BuildActivity[]
   
   @@map("drones")
 }
 
-model ComponentDefinition {
-  id                    String         @id @default(cuid())
-  name                  String
-  categoryId            String
-  weight                Float          // percentage weight within category
-  
-  category              CategoryDefinition @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  droneComponents       DroneComponent[]
-  
-  @@map("component_definitions")
-}
-
-model CategoryDefinition {
+model SystemDefinition {
   id                    String         @id @default(cuid())
   name                  String         @unique
   weight                Float          // percentage weight of total drone
   
-  components            ComponentDefinition[]
-  droneCategories       DroneCategory[]
+  assemblies            AssemblyDefinition[]
+  droneSystems          DroneSystem[]
   
-  @@map("category_definitions")
+  @@map("system_definitions")
 }
 
-model DroneCategory {
+model AssemblyDefinition {
+  id                    String         @id @default(cuid())
+  name                  String
+  systemId              String
+  weight                Float          // percentage weight within system
+  
+  system                SystemDefinition @relation(fields: [systemId], references: [id], onDelete: Cascade)
+  items                 ItemDefinition[]
+  droneAssemblies       DroneAssembly[]
+  
+  @@map("assembly_definitions")
+}
+
+model ItemDefinition {
+  id                    String         @id @default(cuid())
+  name                  String
+  assemblyId            String
+  weight                Float          // percentage weight within assembly
+  
+  assembly              AssemblyDefinition @relation(fields: [assemblyId], references: [id], onDelete: Cascade)
+  droneItems            DroneItem[]
+  
+  @@map("item_definitions")
+}
+
+model DroneSystem {
   id                    String         @id @default(cuid())
   droneId               String
-  categoryDefinitionId  String
+  systemDefinitionId    String
   completionPercentage  Float          @default(0)
   
   drone                 Drone          @relation(fields: [droneId], references: [id], onDelete: Cascade)
-  categoryDefinition    CategoryDefinition @relation(fields: [categoryDefinitionId], references: [id])
-  components            DroneComponent[]
+  systemDefinition      SystemDefinition @relation(fields: [systemDefinitionId], references: [id])
+  assemblies            DroneAssembly[]
   
-  @@unique([droneId, categoryDefinitionId])
-  @@map("drone_categories")
+  @@unique([droneId, systemDefinitionId])
+  @@map("drone_systems")
 }
 
-model DroneComponent {
+model DroneAssembly {
   id                    String         @id @default(cuid())
-  droneCategoryId       String
-  componentDefinitionId String
+  droneSystemId         String
+  assemblyDefinitionId  String
+  completionPercentage  Float          @default(0)
+  
+  droneSystem           DroneSystem    @relation(fields: [droneSystemId], references: [id], onDelete: Cascade)
+  assemblyDefinition    AssemblyDefinition @relation(fields: [assemblyDefinitionId], references: [id])
+  items                 DroneItem[]
+  
+  @@unique([droneSystemId, assemblyDefinitionId])
+  @@map("drone_assemblies")
+}
+
+model DroneItem {
+  id                    String         @id @default(cuid())
+  droneAssemblyId       String
+  itemDefinitionId      String
   status                String         @default("pending") // pending, in-progress, completed
   
-  droneCategory         DroneCategory  @relation(fields: [droneCategoryId], references: [id], onDelete: Cascade)
-  componentDefinition   ComponentDefinition @relation(fields: [componentDefinitionId], references: [id])
+  droneAssembly         DroneAssembly  @relation(fields: [droneAssemblyId], references: [id], onDelete: Cascade)
+  itemDefinition        ItemDefinition @relation(fields: [itemDefinitionId], references: [id])
   
-  @@unique([droneCategoryId, componentDefinitionId])
-  @@map("drone_components")
+  @@unique([droneAssemblyId, itemDefinitionId])
+  @@map("drone_items")
 }
 
 model BuildActivity {
   id                    String         @id @default(cuid())
   droneId               String
-  componentName         String
+  itemName              String
+  assemblyName          String
+  systemName            String
   action                String         // started, completed, updated
   status                String         // pending, in-progress, completed
   timestamp             DateTime       @default(now())
