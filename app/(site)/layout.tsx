@@ -12,13 +12,15 @@ import {
   Moon,
   Menu,
   X,
-  Shield
+  Shield,
+  Activity
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 const navigation = [
   { name: 'Dashboard', href: '/', icon: Home },
   { name: 'Fleet', href: '/fleet', icon: Plane },
+  { name: 'Build Activity', href: '/build-activity', icon: Activity },
   { name: 'Admin', href: '/admin', icon: Shield },
   { name: 'Settings', href: '/settings', icon: Settings },
 ]

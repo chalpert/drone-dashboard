@@ -7,12 +7,15 @@ import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Plus, Minus } from "lucide-react"
 import { BuildDrone } from "@/lib/types"
+import { SearchFilter } from "@/components/search-filter"
+import { exportToCSV, exportToJSON, generateTimestampedFilename } from "@/lib/export-utils"
 
 export default function FleetPage() {
   const [selectedStatus, setSelectedStatus] = useState("all")
   const [selectedDrone, setSelectedDrone] = useState<BuildDrone | null>(null)
   const [expandedSystems, setExpandedSystems] = useState<string[]>([])
   const [drones, setDrones] = useState<BuildDrone[]>([])
+  const [filteredDrones, setFilteredDrones] = useState<BuildDrone[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -25,6 +28,7 @@ export default function FleetPage() {
       if (response.ok) {
         const data = await response.json()
         setDrones(data)
+        setFilteredDrones(data)
       } else {
         console.error('Failed to fetch drones')
       }
@@ -32,6 +36,20 @@ export default function FleetPage() {
       console.error('Error fetching drones:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleFilterChange = (filtered: BuildDrone[]) => {
+    setFilteredDrones(filtered)
+  }
+
+  const handleExport = (format: 'csv' | 'json') => {
+    const timestamp = generateTimestampedFilename('fleet-data', format)
+    
+    if (format === 'csv') {
+      exportToCSV(filteredDrones, timestamp)
+    } else {
+      exportToJSON(filteredDrones, timestamp)
     }
   }
 
@@ -43,7 +61,7 @@ export default function FleetPage() {
     )
   }
 
-  const filteredDrones = drones.filter(drone => {
+  const statusFilteredDrones = filteredDrones.filter(drone => {
     if (selectedStatus === "all") return true
     if (selectedStatus === "in-progress") {
       return drone.status === "in-progress" || (drone.overallCompletion > 0 && drone.overallCompletion < 100)
@@ -55,10 +73,10 @@ export default function FleetPage() {
   })
 
   const statusCounts = {
-    all: drones.length,
-    'in-progress': drones.filter(d => d.status === 'in-progress' || (d.overallCompletion > 0 && d.overallCompletion < 100)).length,
-    'pending': drones.filter(d => d.status === 'pending' || d.overallCompletion === 0).length,
-    'completed': drones.filter(d => d.status === 'completed').length,
+    all: filteredDrones.length,
+    'in-progress': filteredDrones.filter(d => d.status === 'in-progress' || (d.overallCompletion > 0 && d.overallCompletion < 100)).length,
+    'pending': filteredDrones.filter(d => d.status === 'pending' || d.overallCompletion === 0).length,
+    'completed': filteredDrones.filter(d => d.status === 'completed').length,
   }
 
   const getStatusColor = (status: string) => {
@@ -112,6 +130,14 @@ export default function FleetPage() {
         </div>
       </div>
 
+      {/* Search and Filter */}
+      <SearchFilter 
+        data={drones}
+        onFilterChange={handleFilterChange}
+        onExport={handleExport}
+        className="mb-6"
+      />
+
       {/* Status Filter Stats */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
         {Object.entries(statusCounts).map(([status, count]) => (
@@ -143,7 +169,7 @@ export default function FleetPage() {
 
       {/* Drone Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {filteredDrones.map((drone) => (
+        {statusFilteredDrones.map((drone) => (
           <Card 
             key={drone.serial} 
             className="hover:shadow-md transition-shadow cursor-pointer"

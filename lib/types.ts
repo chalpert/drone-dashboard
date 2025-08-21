@@ -36,6 +36,7 @@ export interface BuildDrone {
   overallCompletion: number // Calculated from system completions
   startDate?: string
   estimatedCompletion?: string
+  buildActivities?: BuildActivity[] // Optional build activities
 }
 
 // Build activity log entry

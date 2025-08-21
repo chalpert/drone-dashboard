@@ -40,6 +40,16 @@ export async function GET() {
       overallCompletion: Math.round(drone.overallCompletion * 10) / 10, // Round to 1 decimal place
       startDate: drone.startDate?.toISOString(),
       estimatedCompletion: drone.estimatedCompletion?.toISOString(),
+      buildActivities: drone.buildActivities.map(activity => ({
+        id: activity.id,
+        droneSerial: drone.serial,
+        timestamp: activity.timestamp.toISOString(),
+        itemName: activity.itemName,
+        assemblyName: activity.assemblyName,
+        systemName: activity.systemName,
+        action: activity.action,
+        notes: activity.status // Using status field for notes
+      })),
       systems: drone.systems.map(system => ({
         id: system.id,
         name: system.systemDefinition.name,
