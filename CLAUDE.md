@@ -35,7 +35,6 @@ drone-dashboard/
 │   │   ├── fleet/         # Fleet management
 │   │   ├── build-activity/ # Build activity tracking
 │   │   ├── admin/         # Admin panel
-│   │   └── settings/      # Settings page
 │   ├── api/               # API routes
 │   └── layout.tsx         # Root layout
 ├── components/            # Reusable UI components

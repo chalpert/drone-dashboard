@@ -7,7 +7,6 @@ import {
   ChevronRight, 
   Home, 
   Plane, 
-  Settings,
   Sun,
   Moon,
   Menu,
@@ -23,7 +22,6 @@ const navigation = [
   { name: 'Fleet', href: '/fleet', icon: Plane },
   { name: 'Build Activity', href: '/build-activity', icon: Activity },
   { name: 'Admin', href: '/admin', icon: Shield },
-  { name: 'Settings', href: '/settings', icon: Settings },
 ]
 
 export default function SiteLayout({

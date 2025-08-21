@@ -55,7 +55,7 @@ Dark/Light mode theme preference is not persisting when navigating between pages
 1. Navigate to Dashboard page (`/`)
 2. Toggle theme from Light to Dark mode using theme switcher
 3. Observe that the page correctly displays in dark mode
-4. Navigate to any other page (Fleet, Build Activity, Admin, Settings)
+4. Navigate to any other page (Fleet, Build Activity, Admin)
 5. Observe that theme resets to light mode
 
 **Expected Behavior**  

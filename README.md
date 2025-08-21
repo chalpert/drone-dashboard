@@ -160,7 +160,6 @@ Drone
 - **Fleet**: `/fleet` - Drone management
 - **Build Activity**: `/build-activity` - Activity tracking
 - **Admin**: `/admin` - Administrative functions
-- **Settings**: `/settings` - Configuration
 
 ### Export Capabilities
 - CSV export for activities and fleet data
