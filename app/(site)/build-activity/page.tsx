@@ -159,9 +159,11 @@ export default function BuildActivityPage() {
   const getAvailableItemsForAssembly = () => {
     const itemsMap = new Map<string, { id: string; name: string; status: string }>()
 
-    workflowForm.selectedDrones.forEach(droneSerial => {
-      const drone = drones.find(d => d.serial === droneSerial)
-      const system = drone?.systems.find(s => s.name === workflowForm.selectedSystem)
+    // Only get items if we have selected drones, system, and assembly
+    if (workflowForm.selectedDrones.length > 0 && workflowForm.selectedSystem && workflowForm.selectedAssembly) {
+      // Use the first selected drone as the template (all drones should have the same item structure)
+      const templateDrone = drones.find(d => d.serial === workflowForm.selectedDrones[0])
+      const system = templateDrone?.systems.find(s => s.name === workflowForm.selectedSystem)
       const assembly = system?.assemblies.find(a => a.name === workflowForm.selectedAssembly)
 
       assembly?.items.forEach(item => {
@@ -171,10 +173,12 @@ export default function BuildActivityPage() {
           status: item.status
         })
       })
-    })
+    }
 
     return Array.from(itemsMap.values())
   }
+
+
 
   const getActivityIcon = (action: string) => {
     switch (action) {
