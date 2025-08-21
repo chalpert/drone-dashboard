@@ -104,35 +104,29 @@ export default function FleetPage() {
 
 
 
-      {/* Executive Status Overview - Tablet Optimized */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+      {/* Executive Status Overview - Compact Design */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {Object.entries(statusCounts).map(([status, count]) => (
-          <Card 
+          <Card
             key={status}
             className={`cursor-pointer transition-all duration-300 hover:shadow-lg transform hover:-translate-y-1 ${
-              selectedStatus === status 
-                ? 'ring-2 ring-blue-500 bg-blue-50 dark:bg-blue-900/20 shadow-lg' 
+              selectedStatus === status
+                ? 'ring-2 ring-blue-500 bg-blue-50 dark:bg-blue-900/20 shadow-lg'
                 : 'bg-white dark:bg-gray-800 shadow border-0 hover:shadow-xl'
             }`}
             onClick={() => setSelectedStatus(status)}
           >
-            <CardContent className="p-6">
+            <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider font-semibold">
                     {status === 'all' ? 'Total Fleet' : status.replace('-', ' ')}
                   </p>
-                  <p className="text-3xl font-bold text-gray-900 dark:text-white mt-1">
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
                     {count}
                   </p>
-                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                    {status === 'all' ? 'Serials' :
-                     status === 'in-progress' ? 'Active Builds' :
-                     status === 'pending' ? 'Awaiting Start' :
-                     'Completed'}
-                  </p>
                 </div>
-                <div className={`w-4 h-4 rounded-full ${getStatusColor(status)} shadow-lg`}></div>
+                <div className={`w-3 h-3 rounded-full ${getStatusColor(status)} shadow-lg`}></div>
               </div>
             </CardContent>
           </Card>
