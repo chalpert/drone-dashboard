@@ -16,6 +16,7 @@ import {
   Activity
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { useTheme } from "@/components/theme-provider"
 
 const navigation = [
   { name: 'Dashboard', href: '/', icon: Home },
@@ -31,17 +32,14 @@ export default function SiteLayout({
   children: React.ReactNode
 }) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
-  const [darkMode, setDarkMode] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const { theme, toggleTheme } = useTheme()
   const pathname = usePathname()
-
-  const toggleTheme = () => {
-    setDarkMode(!darkMode)
-    document.documentElement.classList.toggle('dark')
-  }
+  
+  const isDarkMode = theme === "dark"
 
   return (
-    <div className={`flex h-screen ${darkMode ? 'dark' : ''}`}>
+    <div className="flex h-screen">
       {/* Desktop Sidebar */}
       <div
         className={`${
@@ -106,7 +104,7 @@ export default function SiteLayout({
                 onClick={toggleTheme}
                 className="p-1 h-6 w-6"
               >
-                {darkMode ? (
+                {isDarkMode ? (
                   <Sun className="w-3 h-3" />
                 ) : (
                   <Moon className="w-3 h-3" />
@@ -198,7 +196,7 @@ export default function SiteLayout({
               onClick={toggleTheme}
               className="text-gray-400 hover:text-blue-600 dark:hover:text-blue-400"
             >
-              {darkMode ? (
+              {isDarkMode ? (
                 <Sun className="w-4 h-4" />
               ) : (
                 <Moon className="w-4 h-4" />

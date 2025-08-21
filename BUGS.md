@@ -29,12 +29,12 @@ This document tracks all identified bugs, their resolution status, and implement
 ### Open Bugs
 | Bug ID | Priority | Title | Status | Assignee | GitHub Issue |
 |--------|----------|-------|--------|----------|--------------|
-| [BUG-20250821-001](#bug-20250821-001) | P1 | Theme persistence across pages | Open | - | [#2](https://github.com/chalpert/drone-dashboard/issues/2) |
+| - | - | *No open bugs currently* | - | - | - |
 
 ### Recently Resolved Bugs
 | Bug ID | Priority | Title | Resolution Date | GitHub Issue |
 |--------|----------|-------|----------------|--------------|
-| - | - | *No resolved bugs yet* | - | - |
+| [BUG-20250821-001](#bug-20250821-001-resolved) | P1 | Theme persistence across pages | 2025-08-21 | [#2](https://github.com/chalpert/drone-dashboard/issues/2) |
 
 ---
 
@@ -72,30 +72,30 @@ Theme resets to default (light mode) when navigating to different routes.
 - React Version: 19.0.0
 
 **Root Cause Analysis**
-*[To be investigated]*
-- Likely missing `localStorage` synchronization in theme provider
-- Theme context may not be properly wrapped at root layout level
-- Possible issue with Next.js App Router SSR/hydration
+Theme state was managed using local `useState` in the site layout component, which caused the theme to reset on every page navigation. The root layout had hardcoded background styles that overrode theme classes.
 
-**Proposed Solution**
-1. Implement persistent theme storage using `localStorage`
-2. Ensure ThemeProvider wraps entire application in root layout
-3. Add proper SSR/hydration handling for theme state
-4. Add theme preference detection and restoration on app initialization
+**Resolution Details**
+**Resolution Date**: 2025-08-21  
+**Fixed By**: Claude  
+**Solution Implemented**: 
+1. Created `ThemeProvider` component with localStorage persistence and proper SSR handling
+2. Updated root layout to wrap entire app with ThemeProvider
+3. Removed hardcoded background styles from root layout
+4. Updated site layout to use theme context instead of local state
+5. Added proper hydration handling to prevent SSR mismatches
 
-**Files to Modify**
-- `app/layout.tsx` - Root layout theme provider setup
-- `components/theme-provider.tsx` - Theme persistence logic
-- `components/ui/theme-toggle.tsx` - Theme switcher component (if exists)
-- `lib/hooks/use-theme.ts` - Theme management hook (if exists)
+**Files Modified**: 
+- `components/theme-provider.tsx` - New theme provider with localStorage persistence
+- `app/layout.tsx` - Added ThemeProvider wrapper and removed hardcoded styles
+- `app/(site)/layout.tsx` - Updated to use theme context instead of local state
 
-**Testing Plan**
-- [ ] Manual testing across all pages
-- [ ] Browser refresh persistence test
-- [ ] Cross-browser compatibility test
-- [ ] Mobile device testing
-- [ ] Unit tests for theme persistence logic
-- [ ] Integration tests for navigation state
+**Testing Verification**:
+- [x] Manual testing across all pages
+- [x] Browser refresh persistence test
+- [x] TypeScript compilation successful
+- [x] Production build successful
+- [x] Theme toggles work in both desktop and mobile views
+- [x] Proper SSR hydration without mismatches
 
 **GitHub Issue**: [#2](https://github.com/chalpert/drone-dashboard/issues/2)  
 **Pull Request**: TBD  
@@ -104,7 +104,33 @@ Theme resets to default (light mode) when navigating to different routes.
 
 ### Resolved Bugs
 
-*No resolved bugs yet. Resolved bugs will be moved here with full resolution details.*
+#### BUG-20250821-001-RESOLVED
+**Priority**: P1 (High)  
+**Status**: Resolved  
+**Reporter**: Project Team  
+**Date Identified**: 2025-08-21  
+**Date Resolved**: 2025-08-21  
+
+**Description**  
+Dark/Light mode theme preference was not persisting when navigating between pages in the application.
+
+**Resolution Summary**  
+Fixed by implementing a proper ThemeProvider component with localStorage persistence and updating the application architecture to use React context instead of local component state.
+
+**Solution Details**  
+- Created centralized theme management using React Context
+- Added localStorage persistence for theme preferences
+- Implemented proper SSR/hydration handling
+- Removed hardcoded styling conflicts in root layout
+- Updated theme toggle functionality to use context
+
+**Files Modified**: 
+- `components/theme-provider.tsx` - New theme provider implementation
+- `app/layout.tsx` - Root layout updates
+- `app/(site)/layout.tsx` - Site layout theme integration
+
+**GitHub Issue**: [#2](https://github.com/chalpert/drone-dashboard/issues/2)  
+**Pull Request**: TBD
 
 ---
 
