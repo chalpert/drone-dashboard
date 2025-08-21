@@ -42,16 +42,7 @@ export default function BuildActivityPage() {
     fetchData()
   }, [])
 
-  // BUG-001: Page crash on reload - problematic useEffect that causes infinite loop
-  useEffect(() => {
-    // This effect runs after every render and causes a crash when the page is reloaded
-    // It tries to access properties that might not exist during the reload process
-    if (drones.length > 0 && activities.length > 0) {
-      // Force a re-render by updating state, causing infinite loop
-      setLoading(false)
-      setLoading(true) // This creates an infinite loop that crashes the page
-    }
-  }) // Missing dependency array causes this to run on every render
+  // BUG-001: FIXED - Removed problematic useEffect that caused infinite loop
 
   const fetchData = async () => {
     try {
@@ -139,16 +130,10 @@ export default function BuildActivityPage() {
     } catch (error) {
       console.error('Error submitting workflow:', error)
       alert('Failed to submit some updates. Please try again.')
-      // BUG-001: Submit button hanging animation - don't reset submitting state on error
-      // This causes the button to stay in loading state indefinitely after errors
-      // setSubmitting(false) // Commented out to create the bug
+    } finally {
+      // BUG-001: FIXED - Restored finally block to properly reset submitting state
+      setSubmitting(false)
     }
-    // BUG-001: Removed finally block that would reset submitting state
-    // This causes the button to hang in loading animation even after successful submissions
-    // The updates still work but the UI gets stuck
-    // finally {
-    //   setSubmitting(false)
-    // }
   }
 
   const getAvailableSystems = () => {

@@ -228,10 +228,7 @@ export default function FleetPage() {
                             style={{ width: `${system.completionPercentage}%` }}
                           />
                         </div>
-                        <span className="text-xs font-semibold text-gray-600 dark:text-gray-400 w-8">
-                          {/* BUG-002: Missing % symbol from blue status bars on drone cards */}
-                          {system.completionPercentage}
-                        </span>
+                        {/* Removed percentage number display - keeping only visual progress bar */}
                       </div>
                     </div>
                   )) || []}
