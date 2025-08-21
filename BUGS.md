@@ -29,7 +29,7 @@ This document tracks all identified bugs, their resolution status, and implement
 ### Open Bugs
 | Bug ID | Priority | Title | Status | Assignee | GitHub Issue |
 |--------|----------|-------|--------|----------|--------------|
-| [BUG-20250821-001](#bug-20250821-001) | P1 | Theme persistence across pages | Open | - | [#TBD](link) |
+| [BUG-20250821-001](#bug-20250821-001) | P1 | Theme persistence across pages | Open | - | [#2](https://github.com/chalpert/drone-dashboard/issues/2) |
 
 ### Recently Resolved Bugs
 | Bug ID | Priority | Title | Resolution Date | GitHub Issue |
@@ -97,7 +97,7 @@ Theme resets to default (light mode) when navigating to different routes.
 - [ ] Unit tests for theme persistence logic
 - [ ] Integration tests for navigation state
 
-**GitHub Issue**: [#TBD](link)  
+**GitHub Issue**: [#2](https://github.com/chalpert/drone-dashboard/issues/2)  
 **Pull Request**: TBD  
 
 ---
