@@ -86,6 +86,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - All existing API endpoints remain unchanged
 - Navigation structure enhanced with new Build Activity entry
 
+## Bug Tracking & Resolution
+
+All bugs are systematically tracked in [BUGS.md](BUGS.md) with official Bug IDs, priority levels, and detailed resolution information. Resolved bugs are summarized in release notes with references to their Bug IDs.
+
 ## Future Roadmap
 
 ### Planned Features
@@ -94,6 +98,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Batch Operations**: Bulk status updates and operations
 - **Role-based Access**: User permissions and access control
 - **Integration APIs**: Third-party system integrations
+
+### Bug Fixes (Planned)
+- **BUG-20250821-001**: Theme persistence across page navigation
+- Additional bugs will be listed here as they are identified and logged in BUGS.md
 
 ---
 

@@ -26,7 +26,7 @@ const nextConfig: NextConfig = {
       },
       {
         source: '/systems',
-        destination: '/settings',
+        destination: '/admin',
         permanent: false,
       },
       {

@@ -160,7 +160,6 @@ Drone
 - **Fleet**: `/fleet` - Drone management
 - **Build Activity**: `/build-activity` - Activity tracking
 - **Admin**: `/admin` - Administrative functions
-- **Settings**: `/settings` - Configuration
 
 ### Export Capabilities
 - CSV export for activities and fleet data
@@ -215,6 +214,18 @@ docker build -t drone-dashboard .
 # Run container
 docker run -p 3000:3000 drone-dashboard
 ```
+
+## 📖 Documentation
+
+### Project Documentation
+- **[BUGS.md](BUGS.md)** - Bug tracking and resolution log
+- **[CHANGELOG.md](CHANGELOG.md)** - Version history and release notes
+- **[CLAUDE.md](CLAUDE.md)** - AI assistant instructions and project context
+- **[ROADMAP.md](ROADMAP.md)** - Future development plans
+- **[docs/](docs/)** - Technical documentation and implementation guides
+
+### Bug Reporting
+Found a bug? Please use our [GitHub issue template](.github/ISSUE_TEMPLATE/bug_report.yml) to report it. All confirmed bugs are tracked in [BUGS.md](BUGS.md) with official Bug IDs and resolution details.
 
 ## 📝 Contributing
 
