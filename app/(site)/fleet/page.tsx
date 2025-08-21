@@ -113,10 +113,10 @@ export default function FleetPage() {
               selectedStatus === status
                 ? 'ring-2 ring-blue-500 bg-blue-50 dark:bg-blue-900/20 shadow-lg'
                 : 'bg-white dark:bg-gray-800 shadow border-0 hover:shadow-xl'
-            } ${status === 'all' ? 'w-20' : 'w-28'}`}
+            } ${status === 'all' ? 'w-20' : 'w-40'}`}
             onClick={() => setSelectedStatus(status)}
           >
-            <CardContent className="p-1.5">
+            <CardContent className={status === 'all' ? 'px-1.5 -my-2' : 'px-3 -my-2'}>
               <div className={`flex items-center ${status === 'all' ? 'justify-center' : 'justify-between'}`}>
                 <div className={status === 'all' ? 'text-center' : ''}>
                   <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider font-semibold">
