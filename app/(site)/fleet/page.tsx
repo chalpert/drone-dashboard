@@ -7,14 +7,12 @@ import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Plus, Minus, X } from "lucide-react"
 import { BuildDrone } from "@/lib/types"
-import { SearchFilter } from "@/components/search-filter"
-import { exportToCSV, exportToJSON, generateTimestampedFilename } from "@/lib/export-utils"
+
 
 export default function FleetPage() {
   const [selectedStatus, setSelectedStatus] = useState("all")
   const [selectedDrone, setSelectedDrone] = useState<BuildDrone | null>(null)
   const [expandedSystems, setExpandedSystems] = useState<string[]>([])
-  const [drones, setDrones] = useState<BuildDrone[]>([])
   const [filteredDrones, setFilteredDrones] = useState<BuildDrone[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -27,7 +25,6 @@ export default function FleetPage() {
       const response = await fetch('/api/drones')
       if (response.ok) {
         const data = await response.json()
-        setDrones(data)
         setFilteredDrones(data)
       } else {
         console.error('Failed to fetch drones')
@@ -39,19 +36,7 @@ export default function FleetPage() {
     }
   }
 
-  const handleFilterChange = (filtered: BuildDrone[]) => {
-    setFilteredDrones(filtered)
-  }
 
-  const handleExport = (format: 'csv' | 'json') => {
-    const timestamp = generateTimestampedFilename('fleet-data', format)
-    
-    if (format === 'csv') {
-      exportToCSV(filteredDrones, timestamp)
-    } else {
-      exportToJSON(filteredDrones, timestamp)
-    }
-  }
 
   const toggleSystem = (systemId: string) => {
     setExpandedSystems(prev => 
@@ -115,25 +100,9 @@ export default function FleetPage() {
             Comprehensive oversight of drone manufacturing and assembly operations
           </p>
         </div>
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-          <div className="text-gray-600 dark:text-gray-400 text-sm">
-            <div className="text-lg font-semibold text-gray-900 dark:text-white">{filteredDrones.length}</div>
-            <div>Total Units</div>
-          </div>
-          <Button className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 text-base font-medium w-full sm:w-auto touch-manipulation">
-            <Plus className="w-5 h-5 mr-2" />
-            Initialize New Build
-          </Button>
-        </div>
       </div>
 
-      {/* Search and Filter */}
-      <SearchFilter 
-        data={drones}
-        onFilterChange={handleFilterChange}
-        onExport={handleExport}
-        className="mb-6"
-      />
+
 
       {/* Executive Status Overview - Tablet Optimized */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
@@ -157,9 +126,9 @@ export default function FleetPage() {
                     {count}
                   </p>
                   <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                    {status === 'all' ? 'Units' : 
+                    {status === 'all' ? 'Serials' :
                      status === 'in-progress' ? 'Active Builds' :
-                     status === 'pending' ? 'Awaiting Start' : 
+                     status === 'pending' ? 'Awaiting Start' :
                      'Completed'}
                   </p>
                 </div>
@@ -182,7 +151,7 @@ export default function FleetPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <CardTitle className="text-xl font-bold text-gray-900 dark:text-white">
-                    Unit {drone.serial}
+                    Serial {drone.serial}
                   </CardTitle>
                   <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                     {drone.model} Platform
@@ -251,7 +220,7 @@ export default function FleetPage() {
                       className="w-full bg-blue-600 hover:bg-blue-500 text-white py-2 text-sm touch-manipulation"
                       onClick={(e) => {
                         e.stopPropagation()
-                        window.location.href = `/build-activity?unit=${drone.serial}`
+                        window.location.href = `/build-activity?serial=${drone.serial}`
                       }}
                     >
                       Update Assembly Progress
@@ -278,7 +247,7 @@ export default function FleetPage() {
               <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
                 <div>
                   <CardTitle className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
-                    Unit {selectedDrone.serial}
+                    Serial {selectedDrone.serial}
                   </CardTitle>
                   <p className="text-gray-500 dark:text-gray-400 mt-1 text-base">
                     Complete component status and progress tracking
