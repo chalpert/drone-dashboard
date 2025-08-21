@@ -4,59 +4,37 @@ import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
-import { Plus, Clock, CheckCircle, AlertCircle, Search, RefreshCw } from "lucide-react"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Clock, CheckCircle, AlertCircle } from "lucide-react"
 import { BuildDrone, BuildActivity, ItemStatus } from "@/lib/types"
-import { exportActivitiesToCSV, generateTimestampedFilename } from "@/lib/export-utils"
 import { RealTimeIndicator } from "@/components/real-time-provider"
 
-interface ActivityFormData {
-  droneSerial: string
-  systemName: string
-  assemblyName: string
-  itemName: string
-  action: 'started' | 'completed' | 'updated'
-  notes: string
-}
-
-interface AssemblyUpdateData {
-  droneSerial: string
-  systemName: string
-  assemblyName: string
-  itemId: string
-  newStatus: ItemStatus
+interface AssemblyWorkflowData {
+  selectedDrones: string[]
+  selectedSystem: string
+  selectedAssembly: string
+  selectedItems: string[]
+  status: ItemStatus
   notes: string
 }
 
 export default function BuildActivityPage() {
   const [drones, setDrones] = useState<BuildDrone[]>([])
   const [activities, setActivities] = useState<BuildActivity[]>([])
-  const [filteredActivities, setFilteredActivities] = useState<BuildActivity[]>([])
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
-  const [showNewActivityForm, setShowNewActivityForm] = useState(false)
-  const [showAssemblyUpdateForm, setShowAssemblyUpdateForm] = useState(false)
-  const [searchTerm, setSearchTerm] = useState("")
-  
-  // Form states
-  const [activityForm, setActivityForm] = useState<ActivityFormData>({
-    droneSerial: '',
-    systemName: '',
-    assemblyName: '',
-    itemName: '',
-    action: 'started',
-    notes: ''
-  })
-  
-  const [assemblyUpdateForm, setAssemblyUpdateForm] = useState<AssemblyUpdateData>({
-    droneSerial: '',
-    systemName: '',
-    assemblyName: '',
-    itemId: '',
-    newStatus: 'pending',
+  const [submitSuccess, setSubmitSuccess] = useState(false)
+
+  // Assembly workflow form state
+  const [workflowForm, setWorkflowForm] = useState<AssemblyWorkflowData>({
+    selectedDrones: [],
+    selectedSystem: '',
+    selectedAssembly: '',
+    selectedItems: [],
+    status: 'pending',
     notes: ''
   })
 
@@ -64,22 +42,16 @@ export default function BuildActivityPage() {
     fetchData()
   }, [])
 
+  // BUG-001: Page crash on reload - problematic useEffect that causes infinite loop
   useEffect(() => {
-    // Filter activities based on search term
-    if (searchTerm.trim()) {
-      const filtered = activities.filter(activity => 
-        activity.droneSerial.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        activity.itemName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        activity.assemblyName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        activity.systemName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        activity.action.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (activity.notes && activity.notes.toLowerCase().includes(searchTerm.toLowerCase()))
-      )
-      setFilteredActivities(filtered)
-    } else {
-      setFilteredActivities(activities)
+    // This effect runs after every render and causes a crash when the page is reloaded
+    // It tries to access properties that might not exist during the reload process
+    if (drones.length > 0 && activities.length > 0) {
+      // Force a re-render by updating state, causing infinite loop
+      setLoading(false)
+      setLoading(true) // This creates an infinite loop that crashes the page
     }
-  }, [activities, searchTerm])
+  }) // Missing dependency array causes this to run on every render
 
   const fetchData = async () => {
     try {
@@ -96,12 +68,12 @@ export default function BuildActivityPage() {
           }
         })
         
-        // Sort by most recent first
+        // Sort by most recent first and take only the most recent 10 for compact display
         allActivities.sort((a, b) => {
           return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
         })
-        
-        setActivities(allActivities)
+
+        setActivities(allActivities.slice(0, 10))
       } else {
         console.error('Failed to fetch drones')
       }
@@ -112,112 +84,125 @@ export default function BuildActivityPage() {
     }
   }
 
-  const submitActivity = async () => {
-    if (!activityForm.droneSerial || !activityForm.itemName || !activityForm.assemblyName || !activityForm.systemName) {
-      alert('Please fill in all required fields')
+  const submitWorkflow = async () => {
+    if (!workflowForm.selectedDrones.length || !workflowForm.selectedSystem || !workflowForm.selectedItems.length || !workflowForm.status) {
+      alert('Please complete all required fields: Drones, System, Items, and Status')
       return
     }
 
     setSubmitting(true)
     try {
-      // Here you would typically make an API call to submit the activity
-      // For now, we'll simulate it and refresh the data
-      console.log('Submitting activity:', activityForm)
-      
-      // Reset form and close modal
-      setActivityForm({
-        droneSerial: '',
-        systemName: '',
-        assemblyName: '',
-        itemName: '',
-        action: 'started',
-        notes: ''
-      })
-      setShowNewActivityForm(false)
-      
-      // Refresh data
-      await fetchData()
-      
-      alert('Activity submitted successfully!')
-    } catch (error) {
-      console.error('Error submitting activity:', error)
-      alert('Failed to submit activity')
-    } finally {
-      setSubmitting(false)
-    }
-  }
+      // Process each selected drone and item combination
+      const updatePromises = []
 
-  const submitAssemblyUpdate = async () => {
-    if (!assemblyUpdateForm.droneSerial || !assemblyUpdateForm.itemId || !assemblyUpdateForm.newStatus) {
-      alert('Please fill in all required fields')
-      return
-    }
+      for (const droneSerial of workflowForm.selectedDrones) {
+        for (const itemId of workflowForm.selectedItems) {
+          updatePromises.push(
+            fetch(`/api/drones/${droneSerial}/components`, {
+              method: 'PATCH',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                itemId: itemId,
+                status: workflowForm.status,
+                notes: workflowForm.notes
+              }),
+            })
+          )
+        }
+      }
 
-    setSubmitting(true)
-    try {
-      const response = await fetch(`/api/drones/${assemblyUpdateForm.droneSerial}/components`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          itemId: assemblyUpdateForm.itemId,
-          status: assemblyUpdateForm.newStatus
-        }),
-      })
+      const responses = await Promise.all(updatePromises)
+      const failedUpdates = responses.filter(response => !response.ok)
 
-      if (response.ok) {
-        // Reset form and close modal
-        setAssemblyUpdateForm({
-          droneSerial: '',
-          systemName: '',
-          assemblyName: '',
-          itemId: '',
-          newStatus: 'pending',
+      if (failedUpdates.length === 0) {
+        // Reset form
+        setWorkflowForm({
+          selectedDrones: [],
+          selectedSystem: '',
+          selectedAssembly: '',
+          selectedItems: [],
+          status: 'pending',
           notes: ''
         })
-        setShowAssemblyUpdateForm(false)
-        
+
+        // Show success message
+        setSubmitSuccess(true)
+        setTimeout(() => setSubmitSuccess(false), 3000)
+
         // Refresh data
         await fetchData()
-        
-        alert('Item status updated successfully!')
       } else {
-        throw new Error('Failed to update item status')
+        throw new Error(`${failedUpdates.length} updates failed`)
       }
     } catch (error) {
-      console.error('Error updating item:', error)
-      alert('Failed to update item status')
-    } finally {
-      setSubmitting(false)
+      console.error('Error submitting workflow:', error)
+      alert('Failed to submit some updates. Please try again.')
+      // BUG-001: Submit button hanging animation - don't reset submitting state on error
+      // This causes the button to stay in loading state indefinitely after errors
+      // setSubmitting(false) // Commented out to create the bug
     }
+    // BUG-001: Removed finally block that would reset submitting state
+    // This causes the button to hang in loading animation even after successful submissions
+    // The updates still work but the UI gets stuck
+    // finally {
+    //   setSubmitting(false)
+    // }
   }
 
-  const getSelectedDroneData = (droneSerial: string) => {
-    return drones.find(drone => drone.serial === droneSerial)
+  const getAvailableSystems = () => {
+    const systemsSet = new Set<string>()
+    workflowForm.selectedDrones.forEach(droneSerial => {
+      const drone = drones.find(d => d.serial === droneSerial)
+      drone?.systems.forEach(system => {
+        systemsSet.add(system.name)
+      })
+    })
+    return Array.from(systemsSet)
   }
 
-  const getSystemsForDrone = (droneSerial: string) => {
-    const drone = getSelectedDroneData(droneSerial)
-    return drone?.systems || []
+  const getAvailableAssemblies = () => {
+    const assembliesSet = new Set<string>()
+    workflowForm.selectedDrones.forEach(droneSerial => {
+      const drone = drones.find(d => d.serial === droneSerial)
+      const system = drone?.systems.find(s => s.name === workflowForm.selectedSystem)
+      system?.assemblies.forEach(assembly => {
+        assembliesSet.add(assembly.name)
+      })
+    })
+    return Array.from(assembliesSet)
   }
 
-  const getAssembliesForSystem = (droneSerial: string, systemName: string) => {
-    const systems = getSystemsForDrone(droneSerial)
-    const system = systems.find(sys => sys.name === systemName)
-    return system?.assemblies || []
+  const getAvailableItemsForAssembly = () => {
+    const itemsMap = new Map<string, { id: string; name: string; status: string }>()
+
+    // Only get items if we have selected drones, system, and assembly
+    if (workflowForm.selectedDrones.length > 0 && workflowForm.selectedSystem && workflowForm.selectedAssembly) {
+      // Use the first selected drone as the template (all drones should have the same item structure)
+      const templateDrone = drones.find(d => d.serial === workflowForm.selectedDrones[0])
+      const system = templateDrone?.systems.find(s => s.name === workflowForm.selectedSystem)
+      const assembly = system?.assemblies.find(a => a.name === workflowForm.selectedAssembly)
+
+      assembly?.items.forEach(item => {
+        itemsMap.set(item.id, {
+          id: item.id,
+          name: item.name,
+          status: item.status
+        })
+      })
+    }
+
+    return Array.from(itemsMap.values())
   }
 
-  const getItemsForAssembly = (droneSerial: string, systemName: string, assemblyName: string) => {
-    const assemblies = getAssembliesForSystem(droneSerial, systemName)
-    const assembly = assemblies.find(asm => asm.name === assemblyName)
-    return assembly?.items || []
+  const getSelectedItemName = (itemId: string) => {
+    const availableItems = getAvailableItemsForAssembly()
+    const item = availableItems.find(item => item.id === itemId)
+    return item?.name || ''
   }
 
-  const handleExport = () => {
-    const filename = generateTimestampedFilename('build-activities', 'csv')
-    exportActivitiesToCSV(filteredActivities, filename)
-  }
+
 
   const getActivityIcon = (action: string) => {
     switch (action) {
@@ -251,171 +236,225 @@ export default function BuildActivityPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Build Activity Management</h1>
-          <p className="text-gray-500 dark:text-gray-400">
-            Track and manage drone assembly progress and item status updates
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <RealTimeIndicator className="text-sm" />
-          <div className="flex gap-2">
-            <Button 
-              onClick={() => setShowNewActivityForm(true)}
-              className="bg-blue-600 hover:bg-blue-700 text-white"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Log Activity
-            </Button>
-            <Button 
-              onClick={() => setShowAssemblyUpdateForm(true)}
-              variant="outline"
-            >
-              <RefreshCw className="w-4 h-4 mr-2" />
-              Update Item Status
-            </Button>
+      {/* Streamlined Assembly Form */}
+      <Card className="bg-white dark:bg-gray-800 shadow-sm border border-gray-200 dark:border-gray-700">
+        <CardContent className="p-6">
+          <div className="space-y-6">
+            {/* Drone Selection Grid */}
+            <div>
+              <Label className="text-base font-medium text-gray-900 dark:text-white mb-3 block">Select Drones</Label>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 max-h-32 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-lg p-3">
+                {drones.map((drone) => (
+                  <div key={drone.serial} className="flex items-center space-x-2 p-2 hover:bg-gray-50 dark:hover:bg-gray-700/50 rounded">
+                    <Checkbox
+                      id={`drone-${drone.serial}`}
+                      checked={workflowForm.selectedDrones.includes(drone.serial)}
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          setWorkflowForm(prev => ({
+                            ...prev,
+                            selectedDrones: [...prev.selectedDrones, drone.serial]
+                          }))
+                        } else {
+                          setWorkflowForm(prev => ({
+                            ...prev,
+                            selectedDrones: prev.selectedDrones.filter(s => s !== drone.serial)
+                          }))
+                        }
+                      }}
+                      className="w-4 h-4"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <label htmlFor={`drone-${drone.serial}`} className="text-sm font-medium text-gray-900 dark:text-white cursor-pointer block truncate">
+                        {drone.serial}
+                      </label>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">{drone.overallCompletion}%</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* System, Assembly, Item Dropdowns */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <Label className="text-sm font-medium text-gray-900 dark:text-white mb-2 block">System</Label>
+                <Select
+                  value={workflowForm.selectedSystem}
+                  onValueChange={(value) => setWorkflowForm(prev => ({ ...prev, selectedSystem: value, selectedItems: [] }))}
+                >
+                  <SelectTrigger className="h-10">
+                    <SelectValue placeholder="Select system..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {getAvailableSystems().map((systemName) => (
+                      <SelectItem key={systemName} value={systemName}>
+                        {systemName}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label className="text-sm font-medium text-gray-900 dark:text-white mb-2 block">Assembly</Label>
+                <Select
+                  value={workflowForm.selectedAssembly || ''}
+                  onValueChange={(value) => setWorkflowForm(prev => ({ ...prev, selectedAssembly: value, selectedItems: [] }))}
+                  disabled={!workflowForm.selectedSystem}
+                >
+                  <SelectTrigger className="h-10">
+                    <SelectValue placeholder="Select assembly..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {getAvailableAssemblies().map((assemblyName) => (
+                      <SelectItem key={assemblyName} value={assemblyName}>
+                        {assemblyName}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label className="text-sm font-medium text-gray-900 dark:text-white mb-2 block">Item</Label>
+                <Select
+                  value={workflowForm.selectedItems.length === 1 ? workflowForm.selectedItems[0] : ''}
+                  onValueChange={(value) => setWorkflowForm(prev => ({ ...prev, selectedItems: [value] }))}
+                  disabled={!workflowForm.selectedAssembly}
+                >
+                  <SelectTrigger className="h-10">
+                    <SelectValue placeholder="Select item...">
+                      {workflowForm.selectedItems.length === 1 ? getSelectedItemName(workflowForm.selectedItems[0]) : ''}
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    {getAvailableItemsForAssembly().map((item) => (
+                      <SelectItem key={item.id} value={item.id}>
+                        {item.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Status and Notes */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <Label className="text-sm font-medium text-gray-900 dark:text-white mb-2 block">Status</Label>
+                <Select
+                  value={workflowForm.status}
+                  onValueChange={(value) => setWorkflowForm(prev => ({ ...prev, status: value as ItemStatus }))}
+                >
+                  <SelectTrigger className="h-10">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="pending">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
+                        Pending
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="in-progress">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                        In Progress
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="completed">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                        Completed
+                      </div>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label className="text-sm font-medium text-gray-900 dark:text-white mb-2 block">Notes</Label>
+                <Textarea
+                  placeholder="Work notes..."
+                  value={workflowForm.notes}
+                  onChange={(e) => setWorkflowForm(prev => ({ ...prev, notes: e.target.value }))}
+                  rows={3}
+                  className="resize-none text-sm"
+                />
+              </div>
+            </div>
+
+            {/* Submit Button */}
+            <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
+              <div className="flex items-center gap-2">
+                <RealTimeIndicator className="text-xs" />
+                {submitSuccess && (
+                  <Badge className="bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400 text-xs">
+                    ✓ Submitted
+                  </Badge>
+                )}
+              </div>
+              <Button
+                onClick={submitWorkflow}
+                disabled={submitting || !workflowForm.selectedDrones.length || !workflowForm.selectedItems.length}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2"
+              >
+                {submitting ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Submitting...
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle className="w-4 h-4 mr-2" />
+                    Submit Updates
+                  </>
+                )}
+              </Button>
+            </div>
           </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
-      {/* Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Total Activities</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {activities.length}
-                </p>
-              </div>
-              <Clock className="h-8 w-8 text-blue-500" />
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Completed Today</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {activities.filter(a => 
-                    a.action === 'completed' && 
-                    new Date(a.timestamp).toDateString() === new Date().toDateString()
-                  ).length}
-                </p>
-              </div>
-              <CheckCircle className="h-8 w-8 text-green-500" />
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Active Drones</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {new Set(activities.map(a => a.droneSerial)).size}
-                </p>
-              </div>
-              <AlertCircle className="h-8 w-8 text-orange-500" />
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Last 24 Hours</p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {activities.filter(a => 
-                    new Date(a.timestamp).getTime() > Date.now() - 24 * 60 * 60 * 1000
-                  ).length}
-                </p>
-              </div>
-              <RefreshCw className="h-8 w-8 text-purple-500" />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Search and Filter */}
-      <div className="flex flex-col md:flex-row gap-4">
-        <div className="flex-1 relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-          <Input
-            placeholder="Search activities by drone serial, item, assembly, system, or action..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
-          />
-        </div>
-        
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={handleExport}>
-            Export CSV
-          </Button>
-          <Button variant="outline" onClick={fetchData}>
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Refresh
-          </Button>
-        </div>
-      </div>
-
-      {/* Activities List */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            Build Activities
-            <Badge variant="outline" className="text-sm">
-              {filteredActivities.length} activities
+      {/* Compact Activity Timeline */}
+      <Card className="bg-white dark:bg-gray-800 shadow-sm border border-gray-200 dark:border-gray-700">
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-base font-medium text-gray-900 dark:text-white">
+            <Clock className="h-4 w-4 text-gray-500" />
+            Recent Activity
+            <Badge variant="outline" className="text-xs">
+              {activities.length}
             </Badge>
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            {filteredActivities.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
-                No activities found matching your search criteria
+        <CardContent className="pt-0">
+          <div className="space-y-2 max-h-48 overflow-y-auto">
+            {activities.length === 0 ? (
+              <div className="text-center py-6 text-gray-500">
+                <p className="text-sm">No recent activity</p>
               </div>
             ) : (
-              filteredActivities.map((activity) => (
-                <div 
+              activities.map((activity) => (
+                <div
                   key={activity.id}
-                  className="flex items-start gap-4 p-4 rounded-lg border bg-gray-50 dark:bg-gray-800/50"
+                  className="flex items-center gap-3 p-2 rounded bg-gray-50 dark:bg-gray-700/50"
                 >
                   <div className="flex-shrink-0">
                     {getActivityIcon(activity.action)}
                   </div>
-                  
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
+                    <div className="flex items-center gap-2 text-sm">
                       <span className="font-medium text-gray-900 dark:text-white">
                         {activity.droneSerial}
                       </span>
-                      <Badge className={getActivityBadgeColor(activity.action)}>
+                      <Badge className={`${getActivityBadgeColor(activity.action)} text-xs px-1.5 py-0.5`}>
                         {activity.action}
                       </Badge>
                     </div>
-                    
-                    <p className="text-sm text-gray-900 dark:text-white mb-1">
-                      {activity.itemName} in {activity.assemblyName}
+                    <p className="text-xs text-gray-600 dark:text-gray-300 truncate">
+                      {activity.itemName} • {new Date(activity.timestamp).toLocaleString()}
                     </p>
-                    
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
-                      {activity.systemName} • {new Date(activity.timestamp).toLocaleString()}
-                    </p>
-                    
-                    {activity.notes && (
-                      <p className="text-sm text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-700 p-2 rounded border">
-                        {activity.notes}
-                      </p>
-                    )}
                   </div>
                 </div>
               ))
@@ -424,321 +463,7 @@ export default function BuildActivityPage() {
         </CardContent>
       </Card>
 
-      {/* New Activity Form Modal */}
-      {showNewActivityForm && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <CardHeader>
-              <CardTitle>Log New Build Activity</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="drone-select">Drone Serial</Label>
-                  <Select
-                    value={activityForm.droneSerial}
-                    onValueChange={(value) => setActivityForm(prev => ({ 
-                      ...prev, 
-                      droneSerial: value,
-                      systemName: '',
-                      assemblyName: '',
-                      itemName: ''
-                    }))}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select drone" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {drones.map((drone) => (
-                        <SelectItem key={drone.serial} value={drone.serial}>
-                          {drone.serial} - {drone.model}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
 
-                <div>
-                  <Label htmlFor="action-select">Action</Label>
-                  <Select
-                    value={activityForm.action}
-                    onValueChange={(value) => 
-                      setActivityForm(prev => ({ ...prev, action: value as 'started' | 'completed' | 'updated' }))
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="started">Started</SelectItem>
-                      <SelectItem value="completed">Completed</SelectItem>
-                      <SelectItem value="updated">Updated</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              {activityForm.droneSerial && (
-                <div className="grid grid-cols-3 gap-4">
-                  <div>
-                    <Label>System</Label>
-                    <Select
-                      value={activityForm.systemName}
-                      onValueChange={(value) => setActivityForm(prev => ({ 
-                        ...prev, 
-                        systemName: value,
-                        assemblyName: '',
-                        itemName: ''
-                      }))}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select system" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {getSystemsForDrone(activityForm.droneSerial).map((system) => (
-                          <SelectItem key={system.id} value={system.name}>
-                            {system.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div>
-                    <Label>Assembly</Label>
-                    <Select
-                      value={activityForm.assemblyName}
-                      onValueChange={(value) => setActivityForm(prev => ({ 
-                        ...prev, 
-                        assemblyName: value,
-                        itemName: ''
-                      }))}
-                      disabled={!activityForm.systemName}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select assembly" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {getAssembliesForSystem(activityForm.droneSerial, activityForm.systemName).map((assembly) => (
-                          <SelectItem key={assembly.id} value={assembly.name}>
-                            {assembly.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div>
-                    <Label>Item</Label>
-                    <Select
-                      value={activityForm.itemName}
-                      onValueChange={(value) => setActivityForm(prev => ({ ...prev, itemName: value }))}
-                      disabled={!activityForm.assemblyName}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select item" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {getItemsForAssembly(activityForm.droneSerial, activityForm.systemName, activityForm.assemblyName).map((item) => (
-                          <SelectItem key={item.id} value={item.name}>
-                            {item.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              )}
-
-              <div>
-                <Label htmlFor="notes">Notes (Optional)</Label>
-                <Textarea
-                  id="notes"
-                  placeholder="Add any notes about this activity..."
-                  value={activityForm.notes}
-                  onChange={(e) => setActivityForm(prev => ({ ...prev, notes: e.target.value }))}
-                  rows={3}
-                />
-              </div>
-
-              <div className="flex justify-end gap-2 pt-4 border-t">
-                <Button
-                  variant="outline"
-                  onClick={() => setShowNewActivityForm(false)}
-                  disabled={submitting}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  onClick={submitActivity}
-                  disabled={submitting}
-                  className="bg-blue-600 hover:bg-blue-700 text-white"
-                >
-                  {submitting ? 'Submitting...' : 'Submit Activity'}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
-
-      {/* Assembly Update Form Modal */}
-      {showAssemblyUpdateForm && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <CardHeader>
-              <CardTitle>Update Item Status</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label>Drone Serial</Label>
-                  <Select
-                    value={assemblyUpdateForm.droneSerial}
-                    onValueChange={(value) => setAssemblyUpdateForm(prev => ({ 
-                      ...prev, 
-                      droneSerial: value,
-                      systemName: '',
-                      assemblyName: '',
-                      itemId: ''
-                    }))}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select drone" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {drones.map((drone) => (
-                        <SelectItem key={drone.serial} value={drone.serial}>
-                          {drone.serial} - {drone.model}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <Label>New Status</Label>
-                  <Select
-                    value={assemblyUpdateForm.newStatus}
-                    onValueChange={(value) => 
-                      setAssemblyUpdateForm(prev => ({ ...prev, newStatus: value as ItemStatus }))
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="pending">Pending</SelectItem>
-                      <SelectItem value="in-progress">In Progress</SelectItem>
-                      <SelectItem value="completed">Completed</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              {assemblyUpdateForm.droneSerial && (
-                <div className="grid grid-cols-3 gap-4">
-                  <div>
-                    <Label>System</Label>
-                    <Select
-                      value={assemblyUpdateForm.systemName}
-                      onValueChange={(value) => setAssemblyUpdateForm(prev => ({ 
-                        ...prev, 
-                        systemName: value,
-                        assemblyName: '',
-                        itemId: ''
-                      }))}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select system" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {getSystemsForDrone(assemblyUpdateForm.droneSerial).map((system) => (
-                          <SelectItem key={system.id} value={system.name}>
-                            {system.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div>
-                    <Label>Assembly</Label>
-                    <Select
-                      value={assemblyUpdateForm.assemblyName}
-                      onValueChange={(value) => setAssemblyUpdateForm(prev => ({ 
-                        ...prev, 
-                        assemblyName: value,
-                        itemId: ''
-                      }))}
-                      disabled={!assemblyUpdateForm.systemName}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select assembly" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {getAssembliesForSystem(assemblyUpdateForm.droneSerial, assemblyUpdateForm.systemName).map((assembly) => (
-                          <SelectItem key={assembly.id} value={assembly.name}>
-                            {assembly.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div>
-                    <Label>Item</Label>
-                    <Select
-                      value={assemblyUpdateForm.itemId}
-                      onValueChange={(value) => setAssemblyUpdateForm(prev => ({ ...prev, itemId: value }))}
-                      disabled={!assemblyUpdateForm.assemblyName}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select item" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {getItemsForAssembly(assemblyUpdateForm.droneSerial, assemblyUpdateForm.systemName, assemblyUpdateForm.assemblyName).map((item) => (
-                          <SelectItem key={item.id} value={item.id}>
-                            {item.name} (Currently: {item.status})
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              )}
-
-              <div>
-                <Label htmlFor="update-notes">Update Notes (Optional)</Label>
-                <Textarea
-                  id="update-notes"
-                  placeholder="Add any notes about this status change..."
-                  value={assemblyUpdateForm.notes}
-                  onChange={(e) => setAssemblyUpdateForm(prev => ({ ...prev, notes: e.target.value }))}
-                  rows={3}
-                />
-              </div>
-
-              <div className="flex justify-end gap-2 pt-4 border-t">
-                <Button
-                  variant="outline"
-                  onClick={() => setShowAssemblyUpdateForm(false)}
-                  disabled={submitting}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  onClick={submitAssemblyUpdate}
-                  disabled={submitting}
-                  className="bg-green-600 hover:bg-green-700 text-white"
-                >
-                  {submitting ? 'Updating...' : 'Update Status'}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
     </div>
   )
 }

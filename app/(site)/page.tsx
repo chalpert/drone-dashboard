@@ -99,120 +99,137 @@ export default function Dashboard() {
   }
   
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+    <div className="space-y-6 sm:space-y-8">
+      {/* Consistent Functional Header - Assembly Workflow Aligned */}
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 pb-4 border-b border-gray-200 dark:border-gray-700">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Build Overview</h1>
-          <p className="text-gray-500 dark:text-gray-400">
-            Monitor production progress across your drone fleet
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">Production Dashboard</h1>
+          <p className="text-gray-600 dark:text-gray-400 text-base sm:text-lg mt-1">
+            Real-time monitoring and analytics for your drone manufacturing operations
           </p>
         </div>
-        <RealTimeIndicator className="text-sm" />
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+          <RealTimeIndicator className="text-sm bg-blue-50 dark:bg-blue-900/20 px-3 py-2 rounded-lg text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800" />
+          <div className="text-gray-600 dark:text-gray-400 text-sm">
+            <div className="text-lg font-semibold text-gray-900 dark:text-white">{totalDrones}</div>
+            <div>Total Units</div>
+          </div>
+        </div>
       </div>
 
-      {/* Build KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-300">
-              Total Builds
+      {/* Executive KPI Cards - Tablet Optimized Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6">
+        <Card className="bg-white dark:bg-gray-800 shadow-lg border-0 hover:shadow-xl transition-shadow duration-300">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+            <CardTitle className="text-sm font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wide">
+              Total Units
             </CardTitle>
-            <BarChart className="h-4 w-4 text-blue-500" />
+            <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+              <BarChart className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-900 dark:text-white">{totalDrones}</div>
-            <div className="flex items-center justify-between mt-1">
-              <p className="text-xs text-gray-500 dark:text-gray-400">
-                in production
+            <div className="text-3xl font-bold text-gray-900 dark:text-white mb-2">{totalDrones}</div>
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                In Production Pipeline
               </p>
               {isConnected && realtimeData.lastUpdate && (
-                <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300">
-                  Live
+                <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300 border-blue-200 dark:border-blue-700">
+                  ● Live Data
                 </Badge>
               )}
             </div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-300">
-              In Build
+        <Card className="bg-white dark:bg-gray-800 shadow-lg border-0 hover:shadow-xl transition-shadow duration-300">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+            <CardTitle className="text-sm font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wide">
+              Active Builds
             </CardTitle>
-            <ActivitySquare className="h-4 w-4 text-orange-500" />
+            <div className="p-3 bg-orange-100 dark:bg-orange-900/30 rounded-lg">
+              <ActivitySquare className="h-5 w-5 text-orange-600 dark:text-orange-400" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-900 dark:text-white">{dronesInBuild}</div>
-            <div className="flex items-center justify-between mt-1">
-              <p className="text-xs text-gray-500 dark:text-gray-400">
-                active builds
+            <div className="text-3xl font-bold text-gray-900 dark:text-white mb-2">{dronesInBuild}</div>
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                Currently in Assembly
               </p>
               {activities.length > 0 && (
-                <Badge variant="outline" className="text-xs">
-                  {activities.length} activities
+                <Badge variant="outline" className="text-xs bg-orange-50 text-orange-700 dark:bg-orange-900/20 dark:text-orange-300 border-orange-200 dark:border-orange-700">
+                  {activities.length} Activities
                 </Badge>
               )}
             </div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-300">
-              Testing
+        <Card className="bg-white dark:bg-gray-800 shadow-lg border-0 hover:shadow-xl transition-shadow duration-300">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+            <CardTitle className="text-sm font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wide">
+              Quality Testing
             </CardTitle>
-            <AlertCircle className="h-4 w-4 text-blue-600" />
+            <div className="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
+              <AlertCircle className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-900 dark:text-white">{dronesTesting}</div>
-            <div className="flex items-center justify-between mt-1">
-              <p className="text-xs text-gray-500 dark:text-gray-400">
-                in testing phase
+            <div className="text-3xl font-bold text-gray-900 dark:text-white mb-2">{dronesTesting}</div>
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                Final Validation Phase
               </p>
               {systemHealth.length > 0 && (
-                <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300">
-                  {systemHealth.filter(sys => sys.status === 'online').length} systems online
+                <Badge variant="outline" className="text-xs bg-purple-50 text-purple-700 dark:bg-purple-900/20 dark:text-purple-300 border-purple-200 dark:border-purple-700">
+                  {systemHealth.filter(sys => sys.status === 'online').length} Systems Online
                 </Badge>
               )}
             </div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-300">
-              Avg Progress
+        <Card className="bg-white dark:bg-gray-800 shadow-lg border-0 hover:shadow-xl transition-shadow duration-300">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+            <CardTitle className="text-sm font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wide">
+              Fleet Progress
             </CardTitle>
-            <Zap className="h-4 w-4 text-green-500" />
+            <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-lg">
+              <Zap className="h-5 w-5 text-green-600 dark:text-green-400" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-900 dark:text-white">{averageProgress}%</div>
-            <div className="flex items-center justify-between mt-1">
-              <p className="text-xs text-gray-500 dark:text-gray-400">
-                across fleet
+            <div className="text-3xl font-bold text-gray-900 dark:text-white mb-2">{averageProgress}%</div>
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                Average Completion
               </p>
-              <Badge variant="outline" className="text-xs">
-                {drones.filter(d => d.overallCompletion > averageProgress).length} above avg
+              <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300 border-blue-200 dark:border-blue-700">
+                {drones.filter(d => d.overallCompletion > averageProgress).length} Above Target
               </Badge>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
         {/* Build Progress by Drone */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
+        <Card className="bg-white dark:bg-gray-800 shadow-lg border-0">
+          <CardHeader className="flex flex-row items-center justify-between pb-4 border-b border-gray-100 dark:border-gray-700">
             <div>
-              <CardTitle className="text-lg font-semibold text-gray-900 dark:text-white">
-                Build Progress by Drone
+              <CardTitle className="text-xl font-bold text-gray-900 dark:text-white">
+                Production Progress
               </CardTitle>
-              <p className="text-sm text-muted-foreground mt-1">Daily progress tracking</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Real-time unit assembly tracking</p>
             </div>
-            <Clock className="h-5 w-5 text-muted-foreground" />
+            <div className="p-3 bg-gray-100 dark:bg-gray-700 rounded-lg">
+              <Clock className="h-6 w-6 text-gray-600 dark:text-gray-300" />
+            </div>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
+          <CardContent className="pt-6">
+            <div className="space-y-6">
               {drones.map((drone) => {
                 // Get real-time data if available
                 const realtimeProgress = realtimeData.buildProgress[drone.serial];
@@ -220,32 +237,37 @@ export default function Dashboard() {
                 const isRealtime = !!realtimeProgress;
                 
                 return (
-                  <div key={drone.serial} className="space-y-2">
+                  <div key={drone.serial} className="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg space-y-3">
                     <div className="flex items-center justify-between">
                       <div>
-                        <div className="text-sm font-medium text-gray-900 dark:text-white flex items-center">
-                          Serial: {drone.serial}
+                        <div className="text-sm font-semibold text-gray-900 dark:text-white flex items-center">
+                          Unit {drone.serial}
                           {isRealtime && (
-                            <span className="ml-2 w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                            <Badge variant="outline" className="ml-2 text-xs bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-300 border-green-200 dark:border-green-700">
+                              <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse mr-1"></span>
+                              Live Update
+                            </Badge>
                           )}
                         </div>
-                        <div className="text-xs text-gray-500 dark:text-gray-400">
-                          {drone.model} • {drone.status.replace('-', ' ')}
+                        <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                          {drone.model} • {drone.status.replace('-', ' ').toUpperCase()}
                           {realtimeProgress?.currentAssembly && (
-                            <span className="ml-1">• Working on: {realtimeProgress.currentAssembly}</span>
+                            <span className="ml-2 px-2 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded">
+                              {realtimeProgress.currentAssembly}
+                            </span>
                           )}
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className="text-sm font-bold text-gray-900 dark:text-white">
+                        <div className="text-lg font-bold text-gray-900 dark:text-white">
                           {displayCompletion}%
                         </div>
                         <div className="text-xs text-gray-500 dark:text-gray-400">
-                          complete {isRealtime ? '(live)' : ''}
+                          Completion
                         </div>
                       </div>
                     </div>
-                    <Progress value={displayCompletion} className="h-2" />
+                    <Progress value={displayCompletion} className="h-3 sm:h-4" />
                   </div>
                 );
               })}
@@ -254,51 +276,70 @@ export default function Dashboard() {
         </Card>
 
         {/* Recent Build Activity */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
+        <Card className="bg-white dark:bg-gray-800 shadow-lg border-0">
+          <CardHeader className="flex flex-row items-center justify-between pb-4 border-b border-gray-100 dark:border-gray-700">
             <div>
-              <CardTitle className="text-lg font-semibold text-gray-900 dark:text-white">
-                Recent Build Activity
+              <CardTitle className="text-xl font-bold text-gray-900 dark:text-white">
+                Activity Timeline
               </CardTitle>
-              <p className="text-sm text-muted-foreground mt-1">{recentActivities} activities in the last 24h</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{recentActivities} operations in the last 24 hours</p>
             </div>
-            <ActivitySquare className="h-5 w-5 text-muted-foreground" />
+            <div className="p-3 bg-gray-100 dark:bg-gray-700 rounded-lg">
+              <ActivitySquare className="h-6 w-6 text-gray-600 dark:text-gray-300" />
+            </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-6">
             <div className="space-y-4">
               {activities.slice(0, 5).map((activity) => (
                 <div
                   key={activity.id}
-                  className="flex gap-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-800/50"
+                  className="flex gap-4 p-4 rounded-lg bg-gray-50 dark:bg-gray-700/50 border-l-4 border-l-blue-500"
                 >
                   <div
-                    className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${
+                    className={`w-3 h-3 rounded-full mt-1 flex-shrink-0 ring-2 ring-offset-1 ${
                       activity.action === "completed"
-                        ? "bg-green-500"
+                        ? "bg-green-500 ring-green-200 dark:ring-green-700"
                         : activity.action === "started"
-                        ? "bg-blue-500"
-                        : "bg-orange-500"
+                        ? "bg-blue-500 ring-blue-200 dark:ring-blue-700"
+                        : "bg-orange-500 ring-orange-200 dark:ring-orange-700"
                     }`}
                   ></div>
                   <div className="flex-1">
-                  <div className="text-sm text-gray-900 dark:text-white">
-                      {activity.droneSerial}: {activity.itemName} {activity.action}
+                    <div className="text-sm font-medium text-gray-900 dark:text-white">
+                      <span className="font-semibold">Unit {activity.droneSerial}:</span> {activity.itemName}
+                      <Badge className={`ml-2 text-xs ${
+                        activity.action === "completed"
+                          ? "bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-300 border-green-200 dark:border-green-700"
+                          : activity.action === "started"
+                          ? "bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 border-blue-200 dark:border-blue-700"
+                          : "bg-orange-50 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300 border-orange-200 dark:border-orange-700"
+                      }`} variant="outline">
+                        {activity.action.toUpperCase()}
+                      </Badge>
                     </div>
-                    <div className="text-xs text-gray-500 dark:text-gray-400">
-                      {activity.assemblyName} • {activity.systemName} • {new Date(activity.timestamp).toLocaleString()}
+                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 font-medium">
+                      <span className="text-blue-600 dark:text-blue-400">{activity.systemName}</span> → {activity.assemblyName}
+                    </div>
+                    <div className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                      {new Date(activity.timestamp).toLocaleString()}
                     </div>
                     {activity.notes && (
-                      <div className="text-xs text-gray-600 dark:text-gray-300 mt-1">
-                        {activity.notes}
+                      <div className="text-xs text-gray-600 dark:text-gray-300 mt-2 p-2 bg-blue-50 dark:bg-blue-900/20 rounded border border-blue-200 dark:border-blue-700">
+                        <span className="font-medium text-blue-700 dark:text-blue-300">Note:</span> {activity.notes}
                       </div>
                     )}
                   </div>
                 </div>
               ))}
               
-              <Button variant="outline" className="w-full mt-2" size="sm" onClick={() => window.location.href = '/build-activity'}>
-                View All Activities <ChevronRight className="h-4 w-4 ml-1" />
-              </Button>
+              <div className="flex flex-col sm:flex-row gap-3 mt-6">
+                <Button variant="outline" className="flex-1 bg-gradient-to-r from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-200 dark:from-blue-900/20 dark:to-blue-800/20 border-blue-200 dark:border-blue-700 py-3 text-base touch-manipulation" onClick={() => window.location.href = '/build-activity'}>
+                  View All Activities <ChevronRight className="h-5 w-5 ml-2" />
+                </Button>
+                <Button className="bg-blue-600 hover:bg-blue-500 text-white py-3 px-6 text-base touch-manipulation" onClick={() => window.location.href = '/build-activity'}>
+                  Assembly Workflow
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -306,31 +347,49 @@ export default function Dashboard() {
 
       {/* System Health Monitoring (if real-time data available) */}
       {systemHealth.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg font-semibold text-gray-900 dark:text-white">
-              System Health Monitoring
-            </CardTitle>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              Real-time system performance metrics
-            </p>
+        <Card className="bg-white dark:bg-gray-800 shadow-lg border-0">
+          <CardHeader className="border-b border-gray-100 dark:border-gray-700 pb-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-xl font-bold text-gray-900 dark:text-white flex items-center">
+                  <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg mr-3">
+                    <AlertCircle className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                  </div>
+                  System Health Overview
+                </CardTitle>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                  Real-time infrastructure performance monitoring
+                </p>
+              </div>
+              <Badge variant="outline" className="bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300 border-blue-200 dark:border-blue-700">
+                {systemHealth.filter(sys => sys.status === 'online').length}/{systemHealth.length} Online
+              </Badge>
+            </div>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
+          <CardContent className="pt-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
               {systemHealth.map((system) => (
-                <div key={system.id} className="space-y-2">
+                <div key={system.id} className="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg space-y-3">
                   <div className="flex justify-between items-center">
                     <div>
-                      <div className="text-sm font-medium text-gray-900 dark:text-white flex items-center">
+                      <div className="text-sm font-semibold text-gray-900 dark:text-white flex items-center">
                         {system.name}
-                        <span className={`ml-2 w-2 h-2 rounded-full ${system.status === 'online' ? 'bg-green-500' : 'bg-orange-500'} ${system.status === 'online' ? 'animate-pulse' : ''}`}></span>
+                        <span className={`ml-3 px-2 py-1 text-xs rounded-full ${
+                          system.status === 'online' 
+                            ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' 
+                            : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
+                        }`}>
+                          {system.status.toUpperCase()}
+                          {system.status === 'online' && <span className="ml-1 w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>}
+                        </span>
                       </div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400">
-                        CPU: {system.cpu}% • Memory: {system.memory}%
+                      <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 flex gap-4">
+                        <span>CPU: {system.cpu}%</span>
+                        <span>Memory: {system.memory}%</span>
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className={`text-sm font-bold ${
+                      <div className={`text-lg font-bold ${
                         system.health >= 70 ? 'text-green-600 dark:text-green-400' :
                         system.health >= 40 ? 'text-orange-600 dark:text-orange-400' :
                         'text-red-600 dark:text-red-400'
@@ -338,13 +397,13 @@ export default function Dashboard() {
                         {system.health}%
                       </div>
                       <div className="text-xs text-gray-500 dark:text-gray-400">
-                        system health
+                        System Health
                       </div>
                     </div>
                   </div>
                   <Progress 
                     value={system.health} 
-                    className="h-2"
+                    className="h-3 sm:h-4"
                   />
                 </div>
               ))}

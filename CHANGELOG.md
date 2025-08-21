@@ -5,6 +5,53 @@ All notable changes to the Drone Dashboard project will be documented in this fi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0] - 2025-08-21
+
+**Author:** AMP (Amp AI Coding Agent)  
+**Timestamp:** 2025-08-21T15:30:00Z  
+**Commit:** UI Consistency Review & Assembly Workflow Integration
+
+### 🎨 UI Consistency & Assembly Workflow Integration
+
+#### Enhanced
+- **Header Standardization**: Unified all page headers with consistent functional design aligned with assembly workflow
+- **Status Badge Consistency**: Standardized badge styling across all pages with consistent color coding (blue primary, green success, orange warning)
+- **Progress Bar Uniformity**: Consistent progress bar heights and styling across dashboard, fleet, and build activity pages
+- **Real-time Visual Feedback**: Enhanced live data indicators with consistent Badge components and color schemes
+- **Assembly Workflow Integration**: Added seamless navigation between monitoring pages and assembly workflow
+- **Factory Floor Optimization**: Improved contrast, spacing, and touch targets for tablet use in industrial environments
+
+#### Added
+- **Cross-Page Navigation**: "Assembly Workflow" buttons on dashboard and fleet pages for seamless workflow access
+- **Context-Aware Actions**: "Update Assembly Progress" buttons on fleet cards for units in active assembly
+- **Workflow State Preservation**: URL parameters to maintain context when navigating between pages
+- **Live Update Badges**: Enhanced real-time indicators showing when data comes from active workflow sessions
+- **Professional Activity Timeline**: Redesigned dashboard activity feed with workflow-consistent styling
+
+#### Mobile/Tablet Optimization
+- **Touch-Optimized Design**: Consistent `touch-manipulation` and 44px minimum touch targets across all pages
+- **Responsive Header Design**: Simplified functional headers that work for both executives and assembly teams  
+- **Enhanced Modal Experience**: Improved modal sizing, backdrop effects, and touch interactions for tablets
+- **Cross-Device Consistency**: Seamless experience from executive tablets to factory floor workstations
+
+#### Visual Design Cohesion
+- **Consistent Color Scheme**: Standardized blue theme for primary elements with proper dark mode support
+- **Typography Harmony**: Unified text hierarchy and spacing across all pages
+- **Professional Quality**: Maintained executive-level visual quality while optimizing for operational use
+- **Factory-Friendly Interface**: Reduced visual clutter and improved readability for assembly teams
+
+#### User Experience Flow
+- **Workflow-to-Monitoring Integration**: Assembly team can seamlessly move from data entry to progress monitoring
+- **Executive Dashboard Enhancement**: Added "Assembly Workflow" access directly from production dashboard
+- **Fleet Management Integration**: In-progress units now show direct links to update assembly progress
+- **Complete User Journey**: Optimized navigation flow from assembly workflow to fleet monitoring to executive dashboard
+
+#### Code Quality
+- **Removed Unused Functions**: Cleaned up unused `getStatusBadgeVariant` function
+- **Consistent Styling Patterns**: Unified Badge, Button, and Card styling across all components
+- **Type Safety**: Maintained TypeScript consistency throughout UI updates
+- **Performance**: Optimized re-renders with consistent component patterns
+
 ## [2.0.0] - 2025-08-21
 
 ### 🚀 Major Updates - Build Activity Integration

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { triggerItemStatusChange } from '@/lib/integrations/database-hooks'
 
 export async function PATCH(
   request: Request,
@@ -42,6 +43,14 @@ export async function PATCH(
     if (!drone) {
       return NextResponse.json({ error: 'Drone not found' }, { status: 404 })
     }
+
+    // Get current item status before updating
+    const currentItem = await prisma.droneItem.findUnique({
+      where: { id: itemId },
+      select: { status: true }
+    })
+
+    const oldStatus = currentItem?.status || 'pending'
 
     // Update item status
     const updatedItem = await prisma.droneItem.update({
@@ -164,6 +173,16 @@ export async function PATCH(
           status: droneStatus
         }
       })
+    }
+
+    // Trigger integration hooks for real-time notifications
+    if (oldStatus !== status) {
+      try {
+        await triggerItemStatusChange(serial, itemId, oldStatus, status)
+      } catch (integrationError) {
+        console.error('Integration hook error:', integrationError)
+        // Don't fail the main request if integrations fail
+      }
     }
 
     return NextResponse.json({ success: true })

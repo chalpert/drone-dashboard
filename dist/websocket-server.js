@@ -5,7 +5,7 @@ var socket_io_1 = require("socket.io");
 var http_1 = require("http");
 var WebSocketServer = /** @class */ (function () {
     function WebSocketServer(port) {
-        if (port === void 0) { port = 3001; }
+        if (port === void 0) { port = 3003; }
         this.io = null;
         this.httpServer = null;
         this.updateInterval = null;
