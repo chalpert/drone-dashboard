@@ -178,6 +178,12 @@ export default function BuildActivityPage() {
     return Array.from(itemsMap.values())
   }
 
+  const getSelectedItemName = (itemId: string) => {
+    const availableItems = getAvailableItemsForAssembly()
+    const item = availableItems.find(item => item.id === itemId)
+    return item?.name || ''
+  }
+
 
 
   const getActivityIcon = (action: string) => {
@@ -300,7 +306,9 @@ export default function BuildActivityPage() {
                   disabled={!workflowForm.selectedAssembly}
                 >
                   <SelectTrigger className="h-10">
-                    <SelectValue placeholder="Select item..." />
+                    <SelectValue placeholder="Select item...">
+                      {workflowForm.selectedItems.length === 1 ? getSelectedItemName(workflowForm.selectedItems[0]) : ''}
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
                     {getAvailableItemsForAssembly().map((item) => (

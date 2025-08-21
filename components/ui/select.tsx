@@ -27,6 +27,7 @@ interface SelectItemProps {
 
 interface SelectValueProps {
   placeholder?: string
+  children?: React.ReactNode
 }
 
 const SelectContext = React.createContext<{
@@ -86,14 +87,19 @@ export const SelectTrigger = ({ className, children }: SelectTriggerProps) => {
   )
 }
 
-export const SelectValue = ({ placeholder }: SelectValueProps) => {
+export const SelectValue = ({ placeholder, children }: SelectValueProps) => {
   const { value } = React.useContext(SelectContext)
-  
+
+  // If children are provided, use them as the display value
+  if (children) {
+    return <span>{children}</span>
+  }
+
   // Capitalize and format the value for display
-  const displayValue = value ? 
-    value.charAt(0).toUpperCase() + value.slice(1).replace('-', ' ') 
+  const displayValue = value ?
+    value.charAt(0).toUpperCase() + value.slice(1).replace('-', ' ')
     : (placeholder || "Select...")
-  
+
   return <span>{displayValue}</span>
 }
 
