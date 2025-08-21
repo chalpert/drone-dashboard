@@ -116,13 +116,13 @@ export default function FleetPage() {
             }`}
             onClick={() => setSelectedStatus(status)}
           >
-            <CardContent className="p-4">
+            <CardContent className="p-3">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider font-semibold">
                     {status === 'all' ? 'Total Fleet' : status.replace('-', ' ')}
                   </p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
+                  <p className="text-xl font-bold text-gray-900 dark:text-white mt-0.5">
                     {count}
                   </p>
                 </div>
