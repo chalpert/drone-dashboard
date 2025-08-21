@@ -105,7 +105,7 @@ export default function FleetPage() {
 
 
       {/* Executive Status Overview - Ultra Compact Design */}
-      <div className="grid grid-cols-4 gap-2 sm:gap-3">
+      <div className="grid grid-cols-5 gap-2 sm:gap-3">
         {Object.entries(statusCounts).map(([status, count]) => (
           <Card
             key={status}
@@ -120,7 +120,7 @@ export default function FleetPage() {
               <div className={`flex items-center ${status === 'all' ? 'justify-center' : 'justify-between'}`}>
                 <div className={status === 'all' ? 'text-center' : ''}>
                   <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider font-semibold">
-                    {status === 'all' ? 'Total Fleet' : status.replace('-', ' ')}
+                    {status === 'all' ? 'Total' : status.replace('-', ' ')}
                   </p>
                   <p className="text-lg font-bold text-gray-900 dark:text-white mt-0.5">
                     {count}
@@ -201,9 +201,8 @@ export default function FleetPage() {
 
                 {/* Action Buttons - Touch Optimized with Workflow Integration */}
                 <div className="pt-2 flex flex-col gap-2">
-                  <Button 
-                    variant="outline" 
-                    className="w-full bg-gradient-to-r from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-200 dark:from-blue-900/20 dark:to-blue-800/20 border-blue-200 dark:border-blue-700 text-blue-700 dark:text-blue-300 font-medium py-3 text-base touch-manipulation"
+                  <Button
+                    className="w-full bg-blue-600 hover:bg-blue-500 text-white py-2 text-sm touch-manipulation"
                     onClick={(e) => {
                       e.stopPropagation()
                       setSelectedDrone(drone)
@@ -211,17 +210,6 @@ export default function FleetPage() {
                   >
                     View Detailed Analysis
                   </Button>
-                  {drone.status === 'in-progress' && (
-                    <Button 
-                      className="w-full bg-blue-600 hover:bg-blue-500 text-white py-2 text-sm touch-manipulation"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        window.location.href = `/build-activity?serial=${drone.serial}`
-                      }}
-                    >
-                      Update Assembly Progress
-                    </Button>
-                  )}
                 </div>
               </div>
             </CardContent>
