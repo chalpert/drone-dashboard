@@ -104,8 +104,8 @@ export default function FleetPage() {
 
 
 
-      {/* Executive Status Overview - Ultra Compact Design */}
-      <div className="grid grid-cols-5 gap-2 sm:gap-3">
+      {/* Executive Status Overview - Compact Design */}
+      <div className="flex flex-wrap gap-3 max-w-2xl">
         {Object.entries(statusCounts).map(([status, count]) => (
           <Card
             key={status}
@@ -113,7 +113,7 @@ export default function FleetPage() {
               selectedStatus === status
                 ? 'ring-2 ring-blue-500 bg-blue-50 dark:bg-blue-900/20 shadow-lg'
                 : 'bg-white dark:bg-gray-800 shadow border-0 hover:shadow-xl'
-            } ${status === 'all' ? 'col-span-1' : 'col-span-1'}`}
+            } ${status === 'all' ? 'w-20' : 'w-28'}`}
             onClick={() => setSelectedStatus(status)}
           >
             <CardContent className="p-2">
@@ -134,6 +134,8 @@ export default function FleetPage() {
           </Card>
         ))}
       </div>
+
+
 
       {/* Fleet Overview Grid - Tablet Optimized */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
