@@ -31,7 +31,7 @@ interface HealthCheck {
 }
 
 export async function GET() {
-  const startTime = Date.now()
+  // const startTime = Date.now()
   const timestamp = new Date().toISOString()
   
   // Initialize health check response
@@ -115,7 +115,7 @@ export async function GET() {
       healthCheck.checks.memory.status = 'degraded'
       healthCheck.status = 'degraded'
     }
-  } catch (error) {
+  } catch {
     healthCheck.checks.memory.status = 'degraded'
     if (healthCheck.status === 'healthy') {
       healthCheck.status = 'degraded'

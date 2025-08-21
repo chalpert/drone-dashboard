@@ -2,7 +2,8 @@
 
 import { prisma } from '@/lib/prisma'
 import { createSlackIntegration, DroneProgressEvent } from './slack'
-import { triggerWebhook } from '@/app/api/webhooks/generic/route'
+import { triggerWebhook } from './webhook-utils'
+
 
 export interface DatabaseChangeEvent {
   type: 'item_status_changed' | 'drone_progress_updated' | 'system_completed'
@@ -103,6 +104,7 @@ export class DatabaseIntegrationHooks {
     })
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private findItemInDrone(drone: any, itemId: string) {
     for (const system of drone.systems) {
       for (const assembly of system.assemblies) {
@@ -121,6 +123,7 @@ export class DatabaseIntegrationHooks {
     return null
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private async broadcastWebSocketUpdate(drone: any, event: DatabaseChangeEvent) {
     // This would integrate with the WebSocket server to broadcast real-time updates
     // For now, we'll create a simple HTTP call to trigger the WebSocket broadcast

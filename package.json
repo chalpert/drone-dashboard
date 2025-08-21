@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "dev:all": "concurrently \"npm run dev\" \"npm run ws:dev\"",
-    "ws:dev": "ts-node lib/websocket-server.ts",
+    "ws:dev": "ts-node --project tsconfig.server.json lib/websocket-server.ts",
     "ws:start": "node dist/websocket-server.js",
     "build": "next build && tsc lib/websocket-server.ts --outDir dist",
     "start": "concurrently \"next start\" \"npm run ws:start\"",
